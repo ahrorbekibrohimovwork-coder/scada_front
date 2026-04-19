@@ -1,4 +1,5 @@
 import React from 'react';
+import { API_BASE_URL } from '../config';
 
 const SchemaView: React.FC = () => {
   const [svgContent, setSvgContent] = React.useState<string>('');
@@ -8,7 +9,7 @@ const SchemaView: React.FC = () => {
   const fetchSvg = () => {
     setLoading(true);
     setError(false);
-    fetch('http://localhost:8000/api/schema/svg')
+    fetch(`${API_BASE_URL}/api/schema/svg`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to load');
         return res.text();

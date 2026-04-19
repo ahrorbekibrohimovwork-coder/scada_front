@@ -1,9 +1,10 @@
 import React from 'react';
-import Sidebar from './components/Sidebar';
+import Sidebar, { Page } from './components/Sidebar';
 import Header from './components/Header';
 import StationColumn from './components/StationColumn';
 import StationDetail from './components/StationDetail';
 import ChatAssistant from './components/ChatAssistant';
+import VoiceButton from './components/VoiceButton';
 
 const STATIONS_DATA = [
   {
@@ -53,56 +54,88 @@ const STATIONS_DATA = [
 ];
 
 export const App = (): JSX.Element => {
-  const [view, setView] = React.useState<'dashboard' | 'detail'>('dashboard');
+  const [activePage, setActivePage] = React.useState<Page>('asodu');
+  const [detailView, setDetailView] = React.useState<'list' | 'detail'>('list');
   const [selectedStation, setSelectedStation] = React.useState(STATIONS_DATA[0]);
   const [detailMode, setDetailMode] = React.useState<'monitor' | 'schema'>('monitor');
 
+  const handleNavigate = (page: Page) => {
+    setActivePage(page);
+    if (page === 'asodu') setDetailView('list');
+  };
+
   const handleStationClick = (station: typeof STATIONS_DATA[0]) => {
     setSelectedStation(station);
-    setView('detail');
+    setDetailView('detail');
   };
 
   const handleBack = () => {
-    setView('dashboard');
+    setDetailView('list');
+  };
+
+  const renderContent = () => {
+    if (activePage === 'dashboard') {
+      return (
+        <div className="flex-1 flex flex-col overflow-auto">
+          <div className="flex justify-end mb-3">
+            <VoiceButton />
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <img
+              src="/svg_files/Main.svg"
+              alt="Дашборд"
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (activePage === 'asodu') {
+      if (detailView === 'detail') {
+        return (
+          <StationDetail
+            station={selectedStation}
+            mode={detailMode}
+            onModeChange={setDetailMode}
+          />
+        );
+      }
+      return (
+        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-8">
+          {STATIONS_DATA.map((station, index) => (
+            <div key={index} onClick={() => handleStationClick(station)} className="cursor-pointer">
+              <StationColumn
+                name={station.name}
+                subName={station.subName}
+                metrics={station.metrics}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
     <div className="flex min-h-screen bg-[#0f172b] text-white font-sans overflow-x-hidden">
-      <Sidebar />
-      
+      <Sidebar activePage={activePage} onNavigate={handleNavigate} />
+
       <div className="flex-1 ml-[269px] flex flex-col">
-        <Header 
-          breadcrumbStation={view === 'detail' ? selectedStation.name : undefined}
+        <Header
+          breadcrumbStation={activePage === 'asodu' && detailView === 'detail' ? selectedStation.name : undefined}
           onBack={handleBack}
         />
-        
-        <main className="mt-[90px] p-8">
-          {view === 'dashboard' ? (
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-8">
-              {STATIONS_DATA.map((station, index) => (
-                <div key={index} onClick={() => handleStationClick(station)} className="cursor-pointer">
-                  <StationColumn 
-                    name={station.name}
-                    subName={station.subName}
-                    metrics={station.metrics}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <StationDetail 
-              station={selectedStation} 
-              mode={detailMode} 
-              onModeChange={setDetailMode} 
-            />
-          )}
+
+        <main className={`mt-[90px] ${activePage === 'dashboard' ? 'p-4 h-[calc(100vh-90px)]' : 'p-8'} flex flex-col`}>
+          {renderContent()}
         </main>
       </div>
-      
-      {/* CHAT ASSISTANT */}
+
       <ChatAssistant />
 
-      {/* Premium Background Glows */}
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] pointer-events-none" />
       <div className="fixed bottom-0 left-[269px] w-[300px] h-[300px] bg-indigo-600/5 blur-[100px] pointer-events-none" />
     </div>

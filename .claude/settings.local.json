@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(node scripts/build-ejournal.mjs)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c ' *)",
+      "Bash(py --version)",
+      "Bash(python3 -c \"import openpyxl; wb = openpyxl.load_workbook\\('c:/Users/ahrorbek_ibrohimov/Desktop/scada_front/analiz_datas/ToshkentGes.xlsx'\\); print\\('Sheets:', wb.sheetnames\\); ws = wb.active; [print\\(list\\(r\\)\\) for r in ws.iter_rows\\(min_row=1, max_row=8, values_only=True\\)]\")"
+    ]
+  }
+}

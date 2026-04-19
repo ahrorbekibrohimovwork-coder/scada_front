@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(python3 -c ' *)",
+      "Bash(sqlite3 /c/Users/ahrorbek_ibrohimov/Desktop/ejournal/tb_backend/test.db \"SELECT id, login, full_name, role FROM app_user WHERE is_active=1 ORDER BY role, full_name;\")",
+      "Bash(curl -s \"http://localhost:8000/api/auth/users\")",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -X POST \"http://localhost:8000/api/admin/reset\" -H \"Content-Type: application/json\")"
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+class PermitStatus:
+    DRAFT = "DRAFT"
+    ASSIGNED = "ASSIGNED"
+    SAFETY = "SAFETY"
+    APPROVED = "APPROVED"
+    ACTIVE = "ACTIVE"
+    CLOSED = "CLOSED"

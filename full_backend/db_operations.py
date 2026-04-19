@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session, declarative_base
 # 1. Добавляем Base — это "фундамент" для твоих моделей
 Base = declarative_base()
 
-DEFAULT_DATABASE_URL = "postgresql+psycopg2://postgres:zse4XDR%@localhost:5432/electron_journal"
+DEFAULT_DATABASE_URL = "postgresql+psycopg2://postgres:zse4XDR%@host.docker.internal:5432/electron_journal"
 db_url = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
 
 engine = create_engine(db_url, pool_pre_ping=True)

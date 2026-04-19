@@ -7,7 +7,7 @@ if sys.platform == "win32":
     import codecs
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
-DEFAULT_DATABASE_URL = "postgresql+psycopg2://postgres:zse4XDR%@localhost:5432/electron_journal"
+DEFAULT_DATABASE_URL = "postgresql+psycopg2://postgres:zse4XDR%@host.docker.internal:5432/electron_journal"
 db_url = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
 engine = create_engine(db_url)
 

@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  button,
+  input,
+  select,
+  textarea {
+    @apply appearance-none bg-transparent border-0 outline-none;
+  }
+  
+  body {
+    @apply m-0 p-0 overflow-x-hidden bg-[#0f172b];
+    font-family: 'Urbanist', sans-serif;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-[#141e31]/60 backdrop-blur-md border border-white/5 shadow-xl;
+  }
+  
+  .glass-hover {
+    @apply hover:bg-[#141e31]/80 transition-all duration-300;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full;
+  }
+}
+
+:root {
+  --linka: rgba(33, 46, 123, 0.65);
+  --mb-can2: rgba(33, 46, 123, 0.65);
+  --x-1: rgba(226, 236, 90, 1);
+  --x-6iff-c4: rgba(33, 46, 123, 0.65);
+  --animate-spin: spin 1s linear infinite;
+}
+
+/* Custom animations for premium feel */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}

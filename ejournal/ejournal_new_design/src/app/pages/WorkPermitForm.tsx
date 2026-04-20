@@ -91,46 +91,42 @@ export function WorkPermitForm() {
   const fetchStaff = async () => {
     setStaffLoading(true);
     try {
-      const endpoints = {
-        dispatcher: 'dispetchers',
-        dispatcherAssistant: 'dispetcher_assistants',
-        admitter: 'admitters',
-        manager: 'responsible_managers',
-        observer: 'supervisors',
-        foreman: 'work_producers',
-        worker: 'workers',
+      const resp = await apiFetch('/api/auth/users');
+      if (!resp.ok) return;
+      const users = await resp.json();
+
+      // Map backend role names → officials state keys
+      const roleKeyMap: Record<string, string> = {
+        issuer: 'issuer',
+        dispatcher: 'dispatcher',
+        dispatcher_assistant: 'dispatcherAssistant',
+        admitter: 'admitter',
+        manager: 'manager',
+        observer: 'observer',
+        foreman: 'foreman',
+        worker: 'worker',
       };
-      
-      const results: Record<string, any[]> = {};
-      await Promise.all(Object.entries(endpoints).map(async ([key, path]) => {
-        try {
-          const r = await apiFetch(`/api/${path}`);
-          if (r.ok) results[key] = await r.json();
-          else results[key] = [];
-        } catch (e) {
-          results[key] = [];
+
+      const grouped: Record<string, any[]> = {
+        issuer: [], dispatcher: [], dispatcherAssistant: [],
+        admitter: [], manager: [], observer: [], foreman: [], worker: [],
+      };
+
+      for (const u of users) {
+        const key = roleKeyMap[u.role];
+        if (key) {
+          grouped[key].push({
+            id: u.id,
+            full_name: u.name,
+            position: u.position,
+            ex_group: u.electricalGroup,
+          });
         }
-      }));
-      setOfficials(results);
- 
-      // Fetch issuers from auth/users
-      try {
-        const resp = await apiFetch(`/api/auth/users`);
-        if (resp.ok) {
-          const users = await resp.json();
-          setOfficials(prev => ({
-            ...prev,
-            issuer: users.filter((u: any) => u.role === 'issuer').map((u: any) => ({
-              id: u.id,
-              full_name: u.name,
-              position: u.position,
-              ex_group: u.electricalGroup
-            }))
-          }));
-        }
-      } catch (e) {
-        console.error('Failed to fetch issuers', e);
       }
+
+      setOfficials(grouped);
+    } catch (e) {
+      console.error('Failed to fetch staff', e);
     } finally {
       setStaffLoading(false);
     }

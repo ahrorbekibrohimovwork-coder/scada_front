@@ -13,7 +13,7 @@ import { PersonSelectionModal } from '../components/PersonSelectionModal';
 import type { BrigadeMember, EDSSignature } from '../types';
 
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://scruffy-chaos-drift.ngrok-free.dev';
 
 const GROUPS = ['I', 'II', 'III', 'IV', 'V'];
 

@@ -12,7 +12,7 @@ interface BranchSelectionModalProps {
   initialFilialId?: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://scruffy-chaos-drift.ngrok-free.dev';
 
 export function BranchSelectionModal({ onSelect, onClose }: BranchSelectionModalProps) {
   const [step, setStep] = useState<'filial' | 'organization' | 'department'>('filial');

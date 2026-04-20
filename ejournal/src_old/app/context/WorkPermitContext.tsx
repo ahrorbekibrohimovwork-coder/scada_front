@@ -5,7 +5,7 @@ import type {
 } from '../types';
 import { INITIAL_PERMITS } from '../data/mockData';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://scruffy-chaos-drift.ngrok-free.dev';
 let _counter = INITIAL_PERMITS.length + 1;
 const uid = () => `id_${++_counter}_${Date.now()}`;
 

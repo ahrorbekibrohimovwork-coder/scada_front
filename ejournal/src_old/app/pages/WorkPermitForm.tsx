@@ -12,7 +12,7 @@ import { MOCK_USERS } from '../data/mockData';
 type LookupItem = { id: string; name: string };
 type PersonLookupItem = { id: string; name: string; position?: string; ex_group?: string };
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://scruffy-chaos-drift.ngrok-free.dev';
 
 const GROUPS = ['I', 'II', 'III', 'IV', 'V'];
 const DEFAULT_MEASURES = [

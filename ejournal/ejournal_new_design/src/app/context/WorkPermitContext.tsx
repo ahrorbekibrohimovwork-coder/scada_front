@@ -104,8 +104,8 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
   const signByAdmitter = useCallback((id: string, liveParts: string, sig: EDSSignature) => 
     apiAction(id, 'admitter_sign', { signature: sig, comment: liveParts }), [apiAction]);
 
-  const approveWorkplace = useCallback((id: string, role: string, sig: EDSSignature) => 
-    apiAction(id, 'verifier_approve', { signature: sig }), [apiAction]);
+  const approveWorkplace = useCallback((id: string, role: string, sig: EDSSignature) =>
+    apiAction(id, 'verifier_approve', { signature: sig, verifier_role: role }), [apiAction]);
 
   const createBriefing = useCallback(async (id: string, briefing: Partial<DailyBriefing>) => {
     const r = await apiFetch(`/api/permits/create_briefing`, {

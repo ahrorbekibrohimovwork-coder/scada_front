@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../lib/apiFetch';
 import { X, ChevronRight, Search, Building2, MapPin, Loader2, AlertCircle } from 'lucide-react';
 
 interface LookupItem {
@@ -35,7 +36,7 @@ export function BranchSelectionModal({ onSelect, onClose }: BranchSelectionModal
   const fetchFilials = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`${API_BASE}/api/filials`);
+      const resp = await apiFetch(`/api/filials`);
       if (!resp.ok) throw new Error('Failed to fetch filials');
       setFilials(await resp.json());
     } catch (e) {
@@ -48,7 +49,7 @@ export function BranchSelectionModal({ onSelect, onClose }: BranchSelectionModal
   const fetchOrganizations = async (filialId: string) => {
     setLoading(true);
     try {
-      const resp = await fetch(`${API_BASE}/api/organizations/${filialId}`);
+      const resp = await apiFetch(`/api/organizations/${filialId}`);
       if (!resp.ok) throw new Error('Failed to fetch organizations');
       setOrganizations(await resp.json());
     } catch (e) {
@@ -60,7 +61,7 @@ export function BranchSelectionModal({ onSelect, onClose }: BranchSelectionModal
 
   const fetchDepartments = async () => {
     try {
-      const resp = await fetch(`${API_BASE}/api/departments`);
+      const resp = await apiFetch(`/api/departments`);
       if (resp.ok) setDepartments(await resp.json());
     } catch (e) {}
   };

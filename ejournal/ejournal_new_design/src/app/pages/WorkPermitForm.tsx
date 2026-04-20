@@ -13,7 +13,7 @@ import { PersonSelectionModal } from '../components/PersonSelectionModal';
 import type { BrigadeMember, EDSSignature } from '../types';
 
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://scruffy-chaos-drift.ngrok-free.dev';
+import { apiFetch } from '../lib/apiFetch';
 
 const GROUPS = ['I', 'II', 'III', 'IV', 'V'];
 
@@ -104,7 +104,7 @@ export function WorkPermitForm() {
       const results: Record<string, any[]> = {};
       await Promise.all(Object.entries(endpoints).map(async ([key, path]) => {
         try {
-          const r = await fetch(`${API_BASE}/api/${path}`);
+          const r = await apiFetch(`/api/${path}`);
           if (r.ok) results[key] = await r.json();
           else results[key] = [];
         } catch (e) {
@@ -115,7 +115,7 @@ export function WorkPermitForm() {
  
       // Fetch issuers from auth/users
       try {
-        const resp = await fetch(`${API_BASE}/api/auth/users`);
+        const resp = await apiFetch(`/api/auth/users`);
         if (resp.ok) {
           const users = await resp.json();
           setOfficials(prev => ({

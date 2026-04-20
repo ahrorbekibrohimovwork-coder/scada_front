@@ -4,7 +4,7 @@ import type {
   AssistantCheckItem,
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://scruffy-chaos-drift.ngrok-free.dev';
+import { apiFetch } from '../lib/apiFetch';
 
 interface CreatePermitData {
   organization: string; department: string; task: string;
@@ -49,7 +49,7 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
 
   const refresh = useCallback(async () => {
     try {
-      const r = await fetch(`${API_BASE}/api/permits/`);
+      const r = await apiFetch(`/api/permits/`);
       if (r.ok) {
         const data = await r.json();
         setPermits(data);
@@ -68,7 +68,7 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
   const getPermit = useCallback((id: string) => permits.find(p => String(p.id) === String(id)), [permits]);
 
   const createPermit = useCallback(async (data: CreatePermitData): Promise<WorkPermit> => {
-    const r = await fetch(`${API_BASE}/api/permits/create`, {
+    const r = await apiFetch(`/api/permits/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -80,7 +80,7 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const apiAction = useCallback(async (permit_id: string, action: string, extra: any = {}) => {
-    const r = await fetch(`${API_BASE}/api/permits/action`, {
+    const r = await apiFetch(`/api/permits/action`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ permit_id: parseInt(permit_id), action, ...extra }),
@@ -108,7 +108,7 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
     apiAction(id, 'verifier_approve', { signature: sig }), [apiAction]);
 
   const createBriefing = useCallback(async (id: string, briefing: Partial<DailyBriefing>) => {
-    const r = await fetch(`${API_BASE}/api/permits/create_briefing`, {
+    const r = await apiFetch(`/api/permits/create_briefing`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ permit_id: parseInt(id), work_location: briefing.workLocationName }),
@@ -142,7 +142,7 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
     apiAction(id, 'cancel', { comment: reason, signature: { userId, userName, timestamp: new Date().toISOString() } }), [apiAction]);
 
   const saveRework = useCallback(async (id: string, safetyMeasures: string[], specialInstructions: string) => {
-    const r = await fetch(`${API_BASE}/api/permits/save_rework`, {
+    const r = await apiFetch(`/api/permits/save_rework`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ permit_id: parseInt(id), safety_measures: safetyMeasures, special_instructions: specialInstructions }),
@@ -152,7 +152,7 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
   }, [refresh]);
 
   const saveAssistantChecklist = useCallback(async (id: string, checklist: AssistantCheckItem[]) => {
-    const r = await fetch(`${API_BASE}/api/permits/save_checklist`, {
+    const r = await apiFetch(`/api/permits/save_checklist`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ permit_id: parseInt(id), checklist }),

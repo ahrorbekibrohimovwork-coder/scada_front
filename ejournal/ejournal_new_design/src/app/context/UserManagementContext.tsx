@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { User } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://scruffy-chaos-drift.ngrok-free.dev';
+import { apiFetch } from '../lib/apiFetch';
 
 interface CreateUserData {
   login: string;
@@ -29,7 +29,7 @@ export function UserManagementProvider({ children }: { children: React.ReactNode
 
   const refreshUsers = useCallback(async () => {
     try {
-      const resp = await fetch(`${API_BASE}/api/auth/users`);
+      const resp = await apiFetch('/api/auth/users');
       if (resp.ok) {
         const data = await resp.json();
         setUsers(data);
@@ -44,7 +44,7 @@ export function UserManagementProvider({ children }: { children: React.ReactNode
   }, [refreshUsers]);
 
   const createWorkerAccount = useCallback(async (data: CreateUserData): Promise<User> => {
-    const resp = await fetch(`${API_BASE}/api/auth/create`, {
+    const resp = await apiFetch('/api/auth/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...data, role: data.role || 'worker' }),
@@ -59,7 +59,7 @@ export function UserManagementProvider({ children }: { children: React.ReactNode
   }, []);
 
   const updateUser = useCallback(async (id: string, data: Partial<User>) => {
-    const resp = await fetch(`${API_BASE}/api/auth/update/${id}`, {
+    const resp = await apiFetch(`/api/auth/update/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),

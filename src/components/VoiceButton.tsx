@@ -1,5 +1,5 @@
 import React from 'react';
-import { API_BASE_URL } from '../config';
+import { apiFetch } from '../config';
 
 const DASHBOARD_TEXT =
   'Ключевые данные. ' +
@@ -28,8 +28,8 @@ const VoiceButton: React.FC = () => {
 
     setState('loading');
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/tts?text=${encodeURIComponent(DASHBOARD_TEXT)}`
+      const res = await apiFetch(
+        `/api/tts?text=${encodeURIComponent(DASHBOARD_TEXT)}`
       );
       if (!res.ok) throw new Error('TTS error');
       const blob = await res.blob();

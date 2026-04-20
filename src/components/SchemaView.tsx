@@ -1,5 +1,5 @@
 import React from 'react';
-import { API_BASE_URL } from '../config';
+import { apiFetch } from '../config';
 
 const SchemaView: React.FC = () => {
   const [svgContent, setSvgContent] = React.useState<string>('');
@@ -9,9 +9,11 @@ const SchemaView: React.FC = () => {
   const fetchSvg = () => {
     setLoading(true);
     setError(false);
-    fetch(`${API_BASE_URL}/api/schema/svg`)
+    apiFetch('/api/schema/svg')
       .then(res => {
         if (!res.ok) throw new Error('Failed to load');
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('svg') && !ct.includes('xml')) throw new Error('Not SVG — ngrok warning page?');
         return res.text();
       })
       .then(svg => {

@@ -8,4 +8,3 @@ openpyxl
 edge_tts
 beautifulsoup4
 lxml
-torch

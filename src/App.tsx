@@ -116,6 +116,25 @@ export const App = (): JSX.Element => {
       );
     }
 
+    if (activePage === 'video') {
+      return (
+        <div className="flex-1 flex flex-col h-[calc(100vh-90px)]">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-sm text-slate-400">Прямая трансляция</span>
+          </div>
+          <div className="flex-1 rounded-2xl overflow-hidden border border-white/10 bg-[#141e31]">
+            <iframe
+              src="https://assure-trigger-breathing-acceptable.trycloudflare.com"
+              className="w-full h-full"
+              allow="autoplay; fullscreen"
+              title="Видеоаналитика"
+            />
+          </div>
+        </div>
+      );
+    }
+
     return null;
   };
 
@@ -129,7 +148,7 @@ export const App = (): JSX.Element => {
           onBack={handleBack}
         />
 
-        <main className={`mt-[90px] ${activePage === 'dashboard' ? 'p-4 h-[calc(100vh-90px)]' : 'p-8'} flex flex-col`}>
+        <main className={`mt-[90px] ${activePage === 'dashboard' || activePage === 'video' ? 'p-4 h-[calc(100vh-90px)]' : 'p-8'} flex flex-col`}>
           {renderContent()}
         </main>
       </div>

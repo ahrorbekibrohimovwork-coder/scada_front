@@ -76,6 +76,17 @@ USERS = [
     {"id":"p30", "login":"ismoilov",     "password":"1234", "name":"Исмоилов Ш.",         "shortName":"Исмоилов Ш.",         "role":"observer",             "position":"ЭМЦ электр-газ пайвандчи",              "electricalGroup":"III", "department":"ЭМЦ",    "phone":""},
     {"id":"p31", "login":"urinbaev",     "password":"1234", "name":"Ўринбаев Б.",         "shortName":"Ўринбаев Б.",         "role":"observer",             "position":"ЭМЦ электр чилангари",                  "electricalGroup":"III", "department":"ЭМЦ",    "phone":""},
     {"id":"p32", "login":"begimov",      "password":"1234", "name":"Бегимов Х.",          "shortName":"Бегимов Х.",          "role":"observer",             "position":"ЭМЦ электр чилангари",                  "electricalGroup":"III", "department":"ЭМЦ",    "phone":""},
+    # ── Допускающие (admitter) — те же люди что и помощники диспетчера ──────────
+    {"id":"p33", "login":"yuldashev_ad", "password":"1234", "name":"Юлдашев Ф.",        "shortName":"Юлдашев Ф.",        "role":"admitter",             "position":"ГЭС-1 Эксплуатация бошлиғи",           "electricalGroup":"V",   "department":"ГЭС-1",  "phone":""},
+    {"id":"p34", "login":"makhkamov_ad", "password":"1234", "name":"Махкамов А.",        "shortName":"Махкамов А.",        "role":"admitter",             "position":"ГЭС-1 смена бошлиғи",                  "electricalGroup":"V",   "department":"ГЭС-1",  "phone":""},
+    {"id":"p35", "login":"bobokalon_ad", "password":"1234", "name":"Бобокалонов Д.",    "shortName":"Бобокалонов Д.",    "role":"admitter",             "position":"ГЭС-1 смена бошлиғи",                  "electricalGroup":"V",   "department":"ГЭС-1",  "phone":""},
+    {"id":"p36", "login":"musaev_ad",    "password":"1234", "name":"Мусаев Н.",          "shortName":"Мусаев Н.",          "role":"admitter",             "position":"ГЭС-1 смена бошлиғи",                  "electricalGroup":"IV",  "department":"ГЭС-1",  "phone":""},
+    {"id":"p37", "login":"makhkamb_ad",  "password":"1234", "name":"Махкамбоев О.",     "shortName":"Махкамбоев О.",     "role":"admitter",             "position":"ГЭС-1 смена бошлиғи",                  "electricalGroup":"IV",  "department":"ГЭС-1",  "phone":""},
+    # ── Производители работ (foreman) ──────────────────────────────────────────
+    {"id":"p38", "login":"karpov_f",     "password":"1234", "name":"Карпов А.",           "shortName":"Карпов А.",           "role":"foreman",              "position":"Электромонтёр-релечи",                  "electricalGroup":"IV",  "department":"ЭМЦ",    "phone":""},
+    {"id":"p39", "login":"jarov_f",      "password":"1234", "name":"Жаров М.",            "shortName":"Жаров М.",            "role":"foreman",              "position":"ПТЛ бошлиғи",                          "electricalGroup":"V",   "department":"ПТЛ",    "phone":""},
+    {"id":"p40", "login":"umarov_f",     "password":"1234", "name":"Умаров С.",           "shortName":"Умаров С.",           "role":"foreman",              "position":"ЭМЦ бошлиғи",                          "electricalGroup":"V",   "department":"ЭМЦ",    "phone":""},
+    {"id":"p41", "login":"igumenov",     "password":"1234", "name":"Игуменов Л.",         "shortName":"Игуменов Л.",         "role":"foreman",              "position":"Электромонтёр-релечи",                  "electricalGroup":"IV",  "department":"ЭМЦ",    "phone":""},
 ]
 
 TOKENS = {}

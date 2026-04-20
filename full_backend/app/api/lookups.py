@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from db_operations import get_db, get_all_organizations, get_all_departments, get_organizations_by_filial_id
-from models import Filial, Dispetcher, DispetcherAssistant, Admitter, ResponsibleManager, Supervisor, WorkProducer, Worker
+from models import Filial, Dispetcher, DispetcherAssistant, Admitter, ResponsibleManager, Supervisor, WorkProducer, Worker, AppUser
 
 router = APIRouter()
 
@@ -17,13 +17,25 @@ class ItemResponse(BaseModel):
         from_attributes = True
 
 class OfficialResponse(BaseModel):
-    id: int
+    id: str
     full_name: str
     position: str
     ex_group: str = None
 
     class Config:
         from_attributes = True
+
+
+def _from_app_users(db: Session, *roles: str) -> List[dict]:
+    """Query app_users filtered by one or more roles, return OfficialResponse dicts."""
+    users = db.query(AppUser).filter(
+        AppUser.role.in_(list(roles)),
+        AppUser.is_active == 1,
+    ).order_by(AppUser.full_name).all()
+    return [
+        {"id": u.id, "full_name": u.full_name, "position": u.position or "", "ex_group": u.electrical_group or ""}
+        for u in users
+    ]
 
 class FilialResponse(BaseModel):
     id: str
@@ -74,100 +86,55 @@ def get_departments(db: Session = Depends(get_db)):
 
 @router.get("/dispetchers", response_model=List[OfficialResponse])
 def get_dispetchers(db: Session = Depends(get_db)):
-    dispetchers = db.query(Dispetcher).all()
-    if not dispetchers:
-        return [
-            {"id": 1, "full_name": "Волков Михаил Андреевич", "position": "Главный диспетчер", "ex_group": "V"},
-            {"id": 2, "full_name": "Иванов Сергей Петрович", "position": "Главный диспетчер", "ex_group": "IV"},
-        ]
-    return dispetchers
+    rows = db.query(Dispetcher).all()
+    if rows:
+        return [{"id": str(r.id), "full_name": r.full_name, "position": r.position or "", "ex_group": r.ex_group or ""} for r in rows]
+    return _from_app_users(db, "dispatcher")
 
 @router.get("/dispetcher_assistants", response_model=List[OfficialResponse])
 def get_dispetcher_assistants(db: Session = Depends(get_db)):
-    try:
-        assistants = db.query(DispetcherAssistant).all()
-        if not assistants:
-            return [
-                {"id": 1, "full_name": "Смирнов Дмитрий Олегович", "position": "Помощник главного диспетчера", "ex_group": "III"},
-                {"id": 2, "full_name": "Петров Алексей Викторович", "position": "Помощник главного диспетчера", "ex_group": "III"},
-            ]
-        return assistants
-    except:
-        return [
-            {"id": 1, "full_name": "Смирнов Дмитрий Олегович", "position": "Помощник главного диспетчера", "ex_group": "III"},
-            {"id": 2, "full_name": "Петров Алексей Викторович", "position": "Помощник главного диспетчера", "ex_group": "III"},
-        ]
+    rows = db.query(DispetcherAssistant).all()
+    if rows:
+        return [{"id": str(r.id), "full_name": r.full_name, "position": r.position or "", "ex_group": r.ex_group or ""} for r in rows]
+    return _from_app_users(db, "dispatcher_assistant")
 
 @router.get("/admitters", response_model=List[OfficialResponse])
 def get_admitters(db: Session = Depends(get_db)):
-    admitters = db.query(Admitter).all()
-    if not admitters:
-        return [
-            {"id": 1, "full_name": "Сидоров Николай Васильевич", "position": "Допускающий", "ex_group": "III"},
-            {"id": 2, "full_name": "Кузнецов Алексей Иванович", "position": "Допускающий", "ex_group": "III"},
-        ]
-    return admitters
+    rows = db.query(Admitter).all()
+    if rows:
+        return [{"id": str(r.id), "full_name": r.full_name, "position": r.position or "", "ex_group": r.ex_group or ""} for r in rows]
+    return _from_app_users(db, "admitter")
 
 @router.get("/workers", response_model=List[OfficialResponse])
 def get_workers(db: Session = Depends(get_db)):
     try:
-        result = db.execute(text("""
-            SELECT
-                ROW_NUMBER() OVER (ORDER BY fullname) AS id,
-                fullname AS full_name,
-                '' AS position,
-                group_num AS ex_group
-            FROM workers
-        """))
-        workers = [
-            {
-                "id": row[0],
-                "full_name": row[1],
-                "position": row[2],
-                "ex_group": row[3],
-            }
-            for row in result.fetchall()
-        ]
-        if not workers:
-            return [
-                {"id": 1, "full_name": "Новиков Виктор Алексеевич", "position": "Монтажник", "ex_group": "III"},
-                {"id": 2, "full_name": "Фёдоров Игорь Николаевич", "position": "Монтажник", "ex_group": "III"},
-                {"id": 3, "full_name": "Соколов Владимир Петрович", "position": "Электрик", "ex_group": "II"},
-                {"id": 4, "full_name": "Морозов Андрей Юрьевич", "position": "Сварщик", "ex_group": "IV"},
-            ]
-        return workers
+        result = db.execute(text(
+            "SELECT ROW_NUMBER() OVER (ORDER BY fullname)::text, fullname, '', group_num FROM workers"
+        ))
+        rows = result.fetchall()
+        if rows:
+            return [{"id": row[0], "full_name": row[1], "position": row[2], "ex_group": row[3]} for row in rows]
     except Exception as e:
-        print(f"Error in get_workers: {e}")
-        return [
-            {"id": 1, "full_name": "Новиков Виктор Алексеевич", "position": "Монтажник", "ex_group": "III"},
-            {"id": 2, "full_name": "Фёдоров Игорь Николаевич", "position": "Монтажник", "ex_group": "III"},
-            {"id": 3, "full_name": "Соколов Владимир Петрович", "position": "Электрик", "ex_group": "II"},
-            {"id": 4, "full_name": "Морозов Андрей Юрьевич", "position": "Сварщик", "ex_group": "IV"},
-        ]
+        print(f"workers table error: {e}")
+    return _from_app_users(db, "worker")
 
 @router.get("/responsible_managers", response_model=List[OfficialResponse])
 def get_responsible_managers(db: Session = Depends(get_db)):
-    managers = db.query(ResponsibleManager).all()
-    if not managers:
-        return [
-            {"id": 1, "full_name": "Петров Иван Сергеевич", "position": "Ответственный руководитель", "ex_group": "V"},
-        ]
-    return managers
+    rows = db.query(ResponsibleManager).all()
+    if rows:
+        return [{"id": str(r.id), "full_name": r.full_name, "position": r.position or "", "ex_group": r.ex_group or ""} for r in rows]
+    return _from_app_users(db, "manager")
 
 @router.get("/supervisors", response_model=List[OfficialResponse])
 def get_supervisors(db: Session = Depends(get_db)):
-    supervisors = db.query(Supervisor).all()
-    if not supervisors:
-        return [
-            {"id": 1, "full_name": "Ковалев Андрей Николаевич", "position": "Наблюдающий", "ex_group": "III"},
-        ]
-    return supervisors
+    rows = db.query(Supervisor).all()
+    if rows:
+        return [{"id": str(r.id), "full_name": r.full_name, "position": r.position or "", "ex_group": r.ex_group or ""} for r in rows]
+    return _from_app_users(db, "observer")
 
 @router.get("/work_producers", response_model=List[OfficialResponse])
 def get_work_producers(db: Session = Depends(get_db)):
-    producers = db.query(WorkProducer).all()
-    if not producers:
-        return [
-            {"id": 1, "full_name": "Семенов Виктор Петрович", "position": "Производитель работ", "ex_group": "IV"},
-        ]
-    return producers
+    rows = db.query(WorkProducer).all()
+    if rows:
+        return [{"id": str(r.id), "full_name": r.full_name, "position": r.position or "", "ex_group": r.ex_group or ""} for r in rows]
+    return _from_app_users(db, "foreman")

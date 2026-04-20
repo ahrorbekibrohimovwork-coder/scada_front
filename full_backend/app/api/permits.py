@@ -161,6 +161,12 @@ class ReworkSaveSchema(BaseModel):
 def normalize_person_name(value: Optional[str]) -> str:
     return " ".join((value or "").strip().lower().split())
 
+def _name(val: Optional[str], fallback: Optional[str] = None) -> Optional[str]:
+    """Return val unless it's a bare number (bad legacy ID), then return fallback."""
+    if val and not val.strip().lstrip("-").isdigit():
+        return val
+    return fallback
+
 NAME_TO_USER = {normalize_person_name(user["name"]): user for user in USERS}
 
 def user_id_by_name(full_name: Optional[str]) -> Optional[str]:
@@ -359,19 +365,19 @@ def serialize_permit(permit: WorkPermit, *, name_to_id_by_role: dict[str, dict[s
         "safetyMeasures": permit.safety_measures or [],
         "specialInstructions": permit.special_instructions or "",
         "issuerId": issuer_id,
-        "issuerName": permit.issuer_name or id_to_name.get(issuer_id),
+        "issuerName": _name(permit.issuer_name, id_to_name.get(issuer_id)),
         "dispatcherId": dispatcher_id,
-        "dispatcherName": permit.dispetcher or id_to_name.get(dispatcher_id),
+        "dispatcherName": _name(permit.dispetcher, id_to_name.get(dispatcher_id)),
         "dispatcherAssistantId": assistant_id,
-        "dispatcherAssistantName": permit.dispetcher_assistant or id_to_name.get(assistant_id),
+        "dispatcherAssistantName": _name(permit.dispetcher_assistant, id_to_name.get(assistant_id)),
         "admitterId": admitter_id,
-        "admitterName": permit.admitting or id_to_name.get(admitter_id),
+        "admitterName": _name(permit.admitting, id_to_name.get(admitter_id)),
         "managerId": manager_id,
-        "managerName": permit.responsible_manager or id_to_name.get(manager_id),
+        "managerName": _name(permit.responsible_manager, id_to_name.get(manager_id)),
         "observerId": observer_id,
-        "observerName": permit.supervisor or id_to_name.get(observer_id),
+        "observerName": _name(permit.supervisor, id_to_name.get(observer_id)),
         "foremanId": foreman_id,
-        "foremanName": permit.work_producer or id_to_name.get(foreman_id),
+        "foremanName": _name(permit.work_producer, id_to_name.get(foreman_id)),
         "brigadeMembers": brigade_members,
         "issuerSignature": permit.issuer_signature,
         "dispatcherSignature": permit.dispatcher_signature,

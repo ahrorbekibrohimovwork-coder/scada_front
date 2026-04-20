@@ -27,28 +27,45 @@ app.add_middleware(
 )
 
 def seed_auth_users() -> None:
-    """Only seeds the static USERS list — no legacy table imports."""
+    """Sync static USERS list into app_users: add missing, update existing, remove old test users."""
     db = SessionLocal()
     try:
         from models import AppUser
-        existing_by_id = {u.id for u in db.query(AppUser.id).all()}
-        added = 0
+        static_ids = {u["id"] for u in USERS}
+
+        # Remove users with old test IDs (u1..u14) not in new list
+        old_test_ids = [f"u{i}" for i in range(1, 20)]
+        for old_id in old_test_ids:
+            if old_id not in static_ids:
+                u = db.query(AppUser).filter(AppUser.id == old_id).first()
+                if u:
+                    db.delete(u)
+
+        existing_by_id = {u.id: u for u in db.query(AppUser).all()}
         for user in USERS:
-            if user["id"] in existing_by_id:
-                continue
-            db.add(AppUser(
-                id=user["id"], login=user["login"], password=user["password"],
-                full_name=user["name"], short_name=user["shortName"],
-                role=user["role"], position=user["position"],
-                electrical_group=user.get("electricalGroup", ""),
-                department=user.get("department", ""),
-                phone=user.get("phone", ""),
-                is_active=1,
-            ))
-            added += 1
-        if added:
-            db.commit()
-            print(f"DEBUG: Seeded {added} users from static list")
+            existing = existing_by_id.get(user["id"])
+            if existing:
+                # Update in case data changed
+                existing.login = user["login"]
+                existing.full_name = user["name"]
+                existing.short_name = user["shortName"]
+                existing.role = user["role"]
+                existing.position = user["position"]
+                existing.electrical_group = user.get("electricalGroup", "")
+                existing.department = user.get("department", "")
+                existing.is_active = 1
+            else:
+                db.add(AppUser(
+                    id=user["id"], login=user["login"], password=user["password"],
+                    full_name=user["name"], short_name=user["shortName"],
+                    role=user["role"], position=user["position"],
+                    electrical_group=user.get("electricalGroup", ""),
+                    department=user.get("department", ""),
+                    phone=user.get("phone", ""),
+                    is_active=1,
+                ))
+        db.commit()
+        print(f"DEBUG: Synced {len(USERS)} users from static list")
     except Exception as e:
         print(f"DEBUG: Seeding error: {e}")
         db.rollback()

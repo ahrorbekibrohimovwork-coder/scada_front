@@ -91,38 +91,70 @@ export function WorkPermitForm() {
   const fetchStaff = async () => {
     setStaffLoading(true);
     try {
-      const resp = await apiFetch('/api/auth/users');
-      if (!resp.ok) return;
-      const users = await resp.json();
-
-      // Map backend role names → officials state keys
-      const roleKeyMap: Record<string, string> = {
-        issuer: 'issuer',
-        dispatcher: 'dispatcher',
-        dispatcher_assistant: 'dispatcherAssistant',
-        admitter: 'admitter',
-        manager: 'manager',
-        observer: 'observer',
-        foreman: 'foreman',
-        worker: 'worker',
-      };
-
       const grouped: Record<string, any[]> = {
         issuer: [], dispatcher: [], dispatcherAssistant: [],
         admitter: [], manager: [], observer: [], foreman: [], worker: [],
       };
 
-      for (const u of users) {
-        const key = roleKeyMap[u.role];
-        if (key) {
-          grouped[key].push({
-            id: u.id,
-            full_name: u.name,
-            position: u.position,
-            ex_group: u.electricalGroup,
-          });
+      // 1. Fetch from role-specific legacy endpoints (have real DB data)
+      const legacyMap: Record<string, string> = {
+        dispatcher:          '/api/dispetchers',
+        dispatcherAssistant: '/api/dispetcher_assistants',
+        admitter:            '/api/admitters',
+        manager:             '/api/responsible_managers',
+        observer:            '/api/supervisors',
+        foreman:             '/api/work_producers',
+        worker:              '/api/workers',
+      };
+      await Promise.all(
+        Object.entries(legacyMap).map(async ([key, path]) => {
+          try {
+            const r = await apiFetch(path);
+            if (r.ok) {
+              const data = await r.json();
+              grouped[key] = (data as any[]).map(u => ({
+                id: String(u.id),
+                full_name: u.full_name,
+                position: u.position || '',
+                ex_group: u.ex_group || '',
+              }));
+            }
+          } catch (_) {}
+        })
+      );
+
+      // 2. Fetch from auth/users and MERGE (auth users fill in roles not in legacy tables)
+      const authKeyMap: Record<string, string> = {
+        issuer:               'issuer',
+        dispatcher:           'dispatcher',
+        dispatcher_assistant: 'dispatcherAssistant',
+        admitter:             'admitter',
+        manager:              'manager',
+        observer:             'observer',
+        foreman:              'foreman',
+        worker:               'worker',
+      };
+      try {
+        const r = await apiFetch('/api/auth/users');
+        if (r.ok) {
+          const users = await r.json();
+          for (const u of users as any[]) {
+            const key = authKeyMap[u.role];
+            if (!key) continue;
+            const alreadyIn = grouped[key].some(
+              x => x.full_name.trim().toLowerCase() === (u.name || '').trim().toLowerCase()
+            );
+            if (!alreadyIn) {
+              grouped[key].push({
+                id: u.id,
+                full_name: u.name,
+                position: u.position || '',
+                ex_group: u.electricalGroup || '',
+              });
+            }
+          }
         }
-      }
+      } catch (_) {}
 
       setOfficials(grouped);
     } catch (e) {

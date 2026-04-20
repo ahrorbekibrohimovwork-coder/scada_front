@@ -8,7 +8,8 @@ from fastapi.responses import Response
 router = APIRouter()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SVG_PATH = os.path.join(BASE_DIR, '..', 'svg_files', 'good_example.svg')
+_default_svg = os.path.join(BASE_DIR, '..', 'svg_files', 'good_example.svg')
+SVG_PATH = os.getenv('SVG_PATH', _default_svg)
 
 
 def replace_with_random(match):
@@ -31,7 +32,7 @@ def generate_random_svg(path_in: str) -> str:
     with open(path_in, "r", encoding="utf-8") as f:
         content = f.read()
 
-    soup = BeautifulSoup(content, "xml")
+    soup = BeautifulSoup(content, "lxml-xml")
     elements = soup.find_all(['tspan', 'text'])
     number_pattern = re.compile(r'\d+\.\d+|\d+\.|\d+')
 

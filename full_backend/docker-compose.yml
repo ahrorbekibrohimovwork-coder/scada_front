@@ -7,6 +7,9 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+      - ../svg_files:/svg_files
+      - ../analiz_datas:/analiz_datas
     environment:
-      # Важно для подключения к Ollama из Docker
-      - OLLAMA_HOST=http://host.docker.internal:11434
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - SVG_PATH=/svg_files/good_example.svg
+      - EXCEL_PATH=/analiz_datas/ToshkentGes.xlsx

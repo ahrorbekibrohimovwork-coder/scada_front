@@ -7,7 +7,8 @@ from pydantic import BaseModel
 router = APIRouter()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-EXCEL_PATH = os.path.join(BASE_DIR, '..', '..', '..', 'analiz_datas', 'ToshkentGes.xlsx')
+_default_excel = os.path.join(BASE_DIR, '..', '..', '..', 'analiz_datas', 'ToshkentGes.xlsx')
+EXCEL_PATH = os.getenv('EXCEL_PATH', _default_excel)
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1:latest")
 

@@ -73,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate }) => {
 
       <div className="flex flex-col gap-1">
         <SidebarItem page="dashboard" label="Дашборд"            active={activePage === 'dashboard'} onClick={() => onNavigate('dashboard')} />
-        <SidebarItem page="video"     label="Видеоаналитика"      active={activePage === 'video'}     onClick={() => onNavigate('video')} />
+        <SidebarItem page="video"     label="Система видеоаналитики" active={activePage === 'video'}     onClick={() => onNavigate('video')} />
         <SidebarItem
           page="ejournal"
           label="Электронный журнал"

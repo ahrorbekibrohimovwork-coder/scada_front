@@ -139,9 +139,18 @@ def _save_live() -> None:
 _load_live()
 
 
-def _fmt(value: Any) -> str:
+def _raw(value: Any) -> str:
+    """Store-safe: plain numeric string, no formatting."""
     try:
-        f = float(value)
+        return str(float(value))
+    except Exception:
+        return str(value)
+
+
+def _fmt(value: Any) -> str:
+    """Display-safe: thousands-separated with 2 decimals."""
+    try:
+        f = float(str(value).replace('\u00a0', '').replace(' ', ''))
         return f"{f:,.2f}".replace(",", "\u00a0")
     except Exception:
         return str(value)
@@ -161,7 +170,7 @@ def _generate_svg(use_live: bool) -> str:
             return full
         # Real data for mapped signals
         if use_live and num in _live:
-            return f">{_live[num]}<"
+            return f">{_fmt(_live[num])}<"
         # Random fallback for unmapped positions
         if num < 2:
             return f">{random.uniform(0.1, 0.99):.2f}<"
@@ -254,7 +263,7 @@ def get_bozsuv_svg():
         except ValueError:
             return full
         if use_live and num in _live:
-            return f">{_live[num]}<"
+            return f">{_fmt(_live[num])}<"
         if num < 2:
             return f">{random.uniform(0.1, 0.99):.2f}<"
         val = str(random.randint(100, 999))
@@ -298,7 +307,7 @@ async def post_debug(request: Request):
     for signal, value in signals.items():
         svg_num = SIGNAL_TO_SVG.get(signal)
         if svg_num is not None:
-            _live[svg_num] = _fmt(value)
+            _live[svg_num] = _raw(value)
             updated.append(signal)
         else:
             _unmatched.append(signal)

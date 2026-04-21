@@ -112,6 +112,9 @@ SIGNAL_TO_SVG: Dict[str, int] = {
 
 # Reverse lookup: SVG placeholder number → live value string
 _live: Dict[int, str] = {}
+# Last raw payload received (for debugging mismatches)
+_last_raw: Dict[str, Any] = {}
+_unmatched: list = []
 
 
 def _fmt(value: Any) -> str:
@@ -181,25 +184,29 @@ def _generate_kaskad_svg() -> str:
         content = f.read()
 
     values = _kaskad_values()
-    soup = BeautifulSoup(content, "lxml-xml")
-    number_pattern = re.compile(r'^\d+(\.\d+)?\.?$')
 
-    for el in soup.find_all(['tspan', 'text']):
-        if not el.string:
-            continue
-        text = el.string.strip()
-        if not number_pattern.match(text):
-            continue
+    # Simple regex replacement — avoids lxml namespace mangling
+    def replacer(m: re.Match) -> str:
+        full = m.group(0)          # entire >111< or >111.< match
+        inner = m.group(1).strip() # just the number text
+        clean = inner.rstrip('.')
         try:
-            num = int(float(text.rstrip('.')))
+            num = int(float(clean))
         except ValueError:
-            continue
+            return full
         if num in values:
-            el.string.replace_with(values[num])
+            return f">{values[num]}<"
+        return full
 
-    result = str(soup)
-    result = re.sub(r'<\?xml[^>]+\?>', '', result).strip()
-    return result
+    # Match >NUMBER< or >NUMBER.< inside tspan/text tags
+    content = re.sub(r'>(\s*\d+\.?\s*)<', replacer, content)
+
+    # Strip XML declaration so SVG can be embedded inline
+    content = re.sub(r'<\?xml[^>]+\?>', '', content).strip()
+    # Force SVG to fill its container
+    content = re.sub(r'(<svg\b[^>]*)\bwidth="[^"]*"', r'\1width="100%"', content)
+    content = re.sub(r'(<svg\b[^>]*)\bheight="[^"]*"', r'\1height="100%"', content)
+    return content
 
 
 @router.get("/schema/svg")
@@ -221,30 +228,50 @@ async def post_debug(request: Request):
     Body: flat JSON  {"bozsu.plc1.ai.active_power": 145.6, ...}
     """
     payload: Dict[str, Any] = await request.json()
-    print(payload)
+    # Support both flat {"signal": value} and nested {"tags": {"signal": value}}
+    signals: Dict[str, Any] = payload.get("tags", payload)
+    _last_raw.clear()
+    _last_raw.update(signals)
+    _unmatched.clear()
+
     updated = []
-    for signal, value in payload.items():
+    for signal, value in signals.items():
         svg_num = SIGNAL_TO_SVG.get(signal)
         if svg_num is not None:
             _live[svg_num] = _fmt(value)
             updated.append(signal)
+        else:
+            _unmatched.append(signal)
+
+    print(f"[debug] received={len(payload)}, mapped={len(updated)}, unmatched={len(_unmatched)}")
+    if _unmatched:
+        print(f"[debug] unmatched signals: {_unmatched[:10]}")
+
     return {
         "received": len(payload),
         "mapped": len(updated),
+        "unmatched": len(_unmatched),
         "updated_signals": updated,
+        "unmatched_signals": _unmatched[:20],
         "total_live": len(_live),
     }
 
 
 @router.get("/debug")
 def get_debug():
-    """Return current live values and the full signal→SVG mapping."""
+    """Return current live values, last raw payload, and unmatched signals."""
     svg_to_signal = {v: k for k, v in SIGNAL_TO_SVG.items()}
     live_named = {svg_to_signal.get(num, str(num)): val for num, val in _live.items()}
     return {
         "live_count": len(_live),
         "live_values": live_named,
-        "signal_map": SIGNAL_TO_SVG,
+        "kaskad_preview": {
+            "111_total_active": _fmt(float(_live.get(62, 0)) + float(_live.get(162, 0))),
+            "112_plc1_active":  _live.get(62,  "0"),
+            "113_plc1_reactive": _live.get(63, "0"),
+        },
+        "last_raw_payload_keys": list(_last_raw.keys()),
+        "unmatched_signals": _unmatched,
     }
 
 

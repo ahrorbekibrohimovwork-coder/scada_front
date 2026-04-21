@@ -149,7 +149,7 @@ export const App = (): JSX.Element => {
 
           <div className="flex-1 rounded-2xl overflow-hidden bg-black border border-white/5 min-h-0">
             <iframe
-              src="https://assure-trigger-breathing-acceptable.trycloudflare.com"
+              src="https://ferrari-built-finder-plant.trycloudflare.com/"
               className="w-full h-full border-none block"
               allow="autoplay; fullscreen"
               title="Видеоаналитика"

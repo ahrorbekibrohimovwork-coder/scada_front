@@ -116,6 +116,28 @@ _live: Dict[int, str] = {}
 _last_raw: Dict[str, Any] = {}
 _unmatched: list = []
 
+_PERSIST_FILE = os.path.join(BASE_DIR, '_live_cache.json')
+
+def _load_live() -> None:
+    try:
+        import json
+        with open(_PERSIST_FILE, 'r') as f:
+            data = json.load(f)
+        _live.update({int(k): v for k, v in data.items()})
+        print(f"[debug] Loaded {len(_live)} live values from cache")
+    except Exception:
+        pass
+
+def _save_live() -> None:
+    try:
+        import json
+        with open(_PERSIST_FILE, 'w') as f:
+            json.dump({str(k): v for k, v in _live.items()}, f)
+    except Exception:
+        pass
+
+_load_live()
+
 
 def _fmt(value: Any) -> str:
     try:
@@ -246,6 +268,7 @@ async def post_debug(request: Request):
         else:
             _unmatched.append(signal)
 
+    _save_live()
     print(f"[debug] received={len(payload)}, mapped={len(updated)}, unmatched={len(_unmatched)}")
     if _unmatched:
         print(f"[debug] unmatched signals: {_unmatched[:10]}")

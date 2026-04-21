@@ -3,19 +3,45 @@ import { API_BASE_URL, apiFetch } from '../config';
 
 type LiveValues = Record<string, string>;
 
-const METRICS = [
-  { signal: 'bozsu.plc1.ai.active_power',   label: 'Активная мощность (Г1)',   unit: 'кВт',  gen: () => (Math.random() * 3000 + 500).toFixed(0) },
-  { signal: 'bozsu.plc2.ai.active_power',   label: 'Активная мощность (Г2)',   unit: 'кВт',  gen: () => (Math.random() * 3000 + 500).toFixed(0) },
-  { signal: 'bozsu.plc1.ai.reactive_power', label: 'Реактивная мощность (Г1)', unit: 'кВАр', gen: () => (Math.random() * 1200 + 200).toFixed(0) },
-  { signal: 'bozsu.plc2.ai.reactive_power', label: 'Реактивная мощность (Г2)', unit: 'кВАр', gen: () => (Math.random() * 1200 + 200).toFixed(0) },
-  { signal: 'bozsu.plc1.ai.frequency',      label: 'Частота (Г1)',             unit: 'Гц',   gen: () => (49.9 + Math.random() * 0.2).toFixed(2) },
-  { signal: 'bozsu.plc2.ai.frequency',      label: 'Частота (Г2)',             unit: 'Гц',   gen: () => (49.9 + Math.random() * 0.2).toFixed(2) },
-  { signal: 'bozsu.plc1.ai.cosphi',         label: 'Cos φ (Г1)',               unit: '',     gen: () => (0.85 + Math.random() * 0.1).toFixed(3) },
-  { signal: 'bozsu.plc2.ai.cosphi',         label: 'Cos φ (Г2)',               unit: '',     gen: () => (0.85 + Math.random() * 0.1).toFixed(3) },
-  { signal: 'bozsu.plc1.ai.current_a',      label: 'Ток A (Г1)',               unit: 'А',    gen: () => (150 + Math.random() * 50).toFixed(1) },
-  { signal: 'bozsu.plc2.ai.current_a',      label: 'Ток A (Г2)',               unit: 'А',    gen: () => (100 + Math.random() * 50).toFixed(1) },
-  { signal: 'bozsu.rht1.ai.active_power',   label: 'Активная мощность (РВТ1)', unit: 'кВт',  gen: () => (Math.random() * 5000 + 1000).toFixed(0) },
-  { signal: 'bozsu.rht2.ai.active_power',   label: 'Активная мощность (РВТ2)', unit: 'кВт',  gen: () => (Math.random() * 5000 + 1000).toFixed(0) },
+const fmt = (raw: string | number): string => {
+  const n = typeof raw === 'string' ? parseFloat(raw) : raw;
+  if (isNaN(n)) return String(raw);
+  return new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+};
+
+const METRICS: { signal: string; label: string; unit: string; gen: () => string; derived?: (live: LiveValues) => string | null }[] = [
+  { signal: 'bozsu.plc1.ai.active_power',   label: 'Активная мощность (Г1)',   unit: 'кВт',  gen: () => fmt(Math.random() * 3000 + 500) },
+  { signal: 'bozsu.plc2.ai.active_power',   label: 'Активная мощность (Г2)',   unit: 'кВт',  gen: () => fmt(Math.random() * 3000 + 500) },
+  { signal: 'bozsu.plc1.ai.reactive_power', label: 'Реактивная мощность (Г1)', unit: 'кВАр', gen: () => fmt(Math.random() * 1200 + 200) },
+  { signal: 'bozsu.plc2.ai.reactive_power', label: 'Реактивная мощность (Г2)', unit: 'кВАр', gen: () => fmt(Math.random() * 1200 + 200) },
+  { signal: 'bozsu.plc1.ai.frequency',      label: 'Частота (Г1)',             unit: 'Гц',   gen: () => fmt(49.9 + Math.random() * 0.2) },
+  { signal: 'bozsu.plc2.ai.frequency',      label: 'Частота (Г2)',             unit: 'Гц',   gen: () => fmt(49.9 + Math.random() * 0.2) },
+  { signal: 'bozsu.plc1.ai.cosphi',         label: 'Cos φ (Г1)',               unit: '',     gen: () => fmt(0.85 + Math.random() * 0.1) },
+  { signal: 'bozsu.plc2.ai.cosphi',         label: 'Cos φ (Г2)',               unit: '',     gen: () => fmt(0.85 + Math.random() * 0.1) },
+  { signal: 'bozsu.plc1.ai.current_a',      label: 'Ток A (Г1)',               unit: 'А',    gen: () => fmt(150 + Math.random() * 50) },
+  { signal: 'bozsu.plc2.ai.current_a',      label: 'Ток A (Г2)',               unit: 'А',    gen: () => fmt(100 + Math.random() * 50) },
+  { signal: 'bozsu.rht1.ai.active_power',   label: 'Активная мощность (РВТ1)', unit: 'кВт',  gen: () => fmt(Math.random() * 5000 + 1000) },
+  { signal: 'bozsu.rht2.ai.active_power',   label: 'Активная мощность (РВТ2)', unit: 'кВт',  gen: () => fmt(Math.random() * 5000 + 1000) },
+  {
+    signal: '__water_g1',
+    label: 'Расход воды (Г1)',
+    unit: 'м³/с',
+    gen: () => fmt((Math.random() * 3000 + 500) / 100),
+    derived: (live) => {
+      const p = live['bozsu.plc1.ai.active_power'];
+      return p !== undefined ? fmt(parseFloat(p) / 100) : null;
+    },
+  },
+  {
+    signal: '__water_g2',
+    label: 'Расход воды (Г2)',
+    unit: 'м³/с',
+    gen: () => fmt((Math.random() * 3000 + 500) / 100),
+    derived: (live) => {
+      const p = live['bozsu.plc2.ai.active_power'];
+      return p !== undefined ? fmt(parseFloat(p) / 100) : null;
+    },
+  },
 ];
 
 const MetricRow: React.FC<{ label: string; value: string; unit: string; live: boolean }> = ({ label, value, unit, live }) => (
@@ -55,9 +81,16 @@ const MonitorView: React.FC = () => {
     return () => clearInterval(id);
   }, [loadData]);
 
-  const getValue = (signal: string, gen: () => string) => {
-    if (hasLive && live[signal] !== undefined) return { value: live[signal], isLive: true };
-    return { value: gen(), isLive: false };
+  const getValue = (m: typeof METRICS[number]) => {
+    if (hasLive) {
+      if (m.derived) {
+        const v = m.derived(live);
+        if (v !== null) return { value: v, isLive: true };
+      } else if (live[m.signal] !== undefined) {
+        return { value: fmt(live[m.signal]), isLive: true };
+      }
+    }
+    return { value: m.gen(), isLive: false };
   };
 
   return (
@@ -82,7 +115,7 @@ const MonitorView: React.FC = () => {
         </p>
         <div className="bg-[#0f172b]/60 rounded-xl border border-white/5 px-3 py-1 flex-shrink-0">
           {METRICS.map(m => {
-            const { value, isLive } = getValue(m.signal, m.gen);
+            const { value, isLive } = getValue(m);
             return <MetricRow key={m.signal} label={m.label} value={value} unit={m.unit} live={isLive} />;
           })}
         </div>

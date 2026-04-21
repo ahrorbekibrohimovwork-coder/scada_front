@@ -1,4 +1,5 @@
 import React from 'react';
+import VoiceButton from './VoiceButton';
 
 interface HeaderProps {
   breadcrumbStation?: string;
@@ -11,7 +12,7 @@ const Header: React.FC<HeaderProps> = ({ breadcrumbStation, onBack }) => {
       <div className="flex items-center gap-4">
          <div className="flex items-center gap-2">
            <div className="w-4 h-3 bg-blue-500/20 rounded-sm" />
-           <span 
+           <span
              className="text-[#364351] text-lg hover:text-[#586872] cursor-pointer transition-colors"
              onClick={onBack}
            >
@@ -25,23 +26,8 @@ const Header: React.FC<HeaderProps> = ({ breadcrumbStation, onBack }) => {
            )}
          </div>
       </div>
-      
-      <div className="flex items-center gap-8">
-        <div className="relative">
-          <input 
-            type="text" 
-            placeholder="Search" 
-            className="bg-[#0f172b] border-none outline-none rounded-full px-10 py-2 w-[240px] text-white text-sm focus:ring-1 focus:ring-blue-500/50"
-          />
-          <div className="absolute left-3 top-2.5 opacity-50 text-white">🔍</div>
-        </div>
-        
-        <div className="flex items-center gap-4 text-xl opacity-60">
-           <span className="cursor-pointer hover:opacity-100 italic font-bold text-sm">☀️</span>
-           <span className="cursor-pointer hover:opacity-100 italic font-bold text-sm">🌐</span>
-           <span className="cursor-pointer hover:opacity-100 italic font-bold text-sm">👤</span>
-        </div>
-      </div>
+
+      <VoiceButton />
     </header>
   );
 };

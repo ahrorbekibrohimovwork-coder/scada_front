@@ -4,7 +4,6 @@ import Header from './components/Header';
 import StationColumn from './components/StationColumn';
 import StationDetail from './components/StationDetail';
 import ChatAssistant from './components/ChatAssistant';
-import VoiceButton from './components/VoiceButton';
 
 // Вспомогательный компонент для карточек статистики
 const MiniStatCard = ({ title, value, icon, color }: { title: string, value: string, icon: React.ReactNode, color: string }) => (
@@ -89,9 +88,6 @@ export const App = (): JSX.Element => {
     if (activePage === 'dashboard') {
       return (
         <div className="flex-1 flex flex-col h-full overflow-hidden">
-          <div className="flex justify-end mb-3">
-            <VoiceButton />
-          </div>
           <div className="flex-1 flex items-center justify-center overflow-hidden">
             <img
               src="/svg_files/Main.svg"

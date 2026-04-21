@@ -237,6 +237,50 @@ def get_kaskad_svg():
     return Response(content=svg_content, media_type="image/svg+xml")
 
 
+@router.get("/schema/bozsuv")
+def get_bozsuv_svg():
+    bozsuv_path = os.path.join(BASE_DIR, '..', 'svg_files', 'bozsuv.svg')
+    with open(bozsuv_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    use_live = bool(_live)
+
+    def replacer(m: re.Match) -> str:
+        full = m.group(0)
+        inner = m.group(1).strip()
+        clean = inner.rstrip('.')
+        try:
+            num = int(float(clean))
+        except ValueError:
+            return full
+        if use_live and num in _live:
+            return f">{_live[num]}<"
+        if num < 2:
+            return f">{random.uniform(0.1, 0.99):.2f}<"
+        val = str(random.randint(100, 999))
+        if inner.endswith('.'):
+            val += '.'
+        return f">{val}<"
+
+    content = re.sub(r'>(\s*\d+\.?\s*)<', replacer, content)
+    content = re.sub(r'<\?xml[^>]+\?>', '', content).strip()
+    content = re.sub(r'(<svg\b[^>]*?)\bwidth="[^"]*"', r'\1width="100%"', content, flags=re.DOTALL)
+    content = re.sub(r'(<svg\b[^>]*?)\bheight="[^"]*"', r'\1height="100%"', content, flags=re.DOTALL)
+    if 'width="100%"' not in content:
+        content = re.sub(r'<svg\b', '<svg width="100%" height="100%"', content, count=1)
+    return Response(content=content, media_type="image/svg+xml")
+
+
+@router.get("/debug/values")
+def get_live_values():
+    """Return named live values for frontend metric cards."""
+    svg_to_signal = {v: k for k, v in SIGNAL_TO_SVG.items()}
+    return {
+        svg_to_signal.get(num, str(num)): val
+        for num, val in _live.items()
+    }
+
+
 @router.post("/debug")
 async def post_debug(request: Request):
     """Receive live signal values from PLC/SCADA and update SVG placeholders.

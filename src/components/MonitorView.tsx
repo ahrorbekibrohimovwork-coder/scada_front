@@ -1,58 +1,90 @@
 import React from 'react';
-import MetricCard from './MetricCard';
-import StatusSwitch from './StatusSwitch';
+import { API_BASE_URL, apiFetch } from '../config';
+
+type LiveValues = Record<string, string>;
+
+const METRICS = [
+  { signal: 'bozsu.plc1.ai.active_power',   label: 'Активная мощность (Г1)',   unit: 'кВт',  gen: () => (Math.random() * 3000 + 500).toFixed(0) },
+  { signal: 'bozsu.plc2.ai.active_power',   label: 'Активная мощность (Г2)',   unit: 'кВт',  gen: () => (Math.random() * 3000 + 500).toFixed(0) },
+  { signal: 'bozsu.plc1.ai.reactive_power', label: 'Реактивная мощность (Г1)', unit: 'кВАр', gen: () => (Math.random() * 1200 + 200).toFixed(0) },
+  { signal: 'bozsu.plc2.ai.reactive_power', label: 'Реактивная мощность (Г2)', unit: 'кВАр', gen: () => (Math.random() * 1200 + 200).toFixed(0) },
+  { signal: 'bozsu.plc1.ai.frequency',      label: 'Частота (Г1)',             unit: 'Гц',   gen: () => (49.9 + Math.random() * 0.2).toFixed(2) },
+  { signal: 'bozsu.plc2.ai.frequency',      label: 'Частота (Г2)',             unit: 'Гц',   gen: () => (49.9 + Math.random() * 0.2).toFixed(2) },
+  { signal: 'bozsu.plc1.ai.cosphi',         label: 'Cos φ (Г1)',               unit: '',     gen: () => (0.85 + Math.random() * 0.1).toFixed(3) },
+  { signal: 'bozsu.plc2.ai.cosphi',         label: 'Cos φ (Г2)',               unit: '',     gen: () => (0.85 + Math.random() * 0.1).toFixed(3) },
+  { signal: 'bozsu.plc1.ai.current_a',      label: 'Ток A (Г1)',               unit: 'А',    gen: () => (150 + Math.random() * 50).toFixed(1) },
+  { signal: 'bozsu.plc2.ai.current_a',      label: 'Ток A (Г2)',               unit: 'А',    gen: () => (100 + Math.random() * 50).toFixed(1) },
+  { signal: 'bozsu.rht1.ai.active_power',   label: 'Активная мощность (РВТ1)', unit: 'кВт',  gen: () => (Math.random() * 5000 + 1000).toFixed(0) },
+  { signal: 'bozsu.rht2.ai.active_power',   label: 'Активная мощность (РВТ2)', unit: 'кВт',  gen: () => (Math.random() * 5000 + 1000).toFixed(0) },
+];
+
+const MetricRow: React.FC<{ label: string; value: string; unit: string; live: boolean }> = ({ label, value, unit, live }) => (
+  <div className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
+    <span className="text-xs text-slate-400">{label}</span>
+    <div className="flex items-center gap-1.5">
+      <span className={`text-sm font-mono font-semibold ${live ? 'text-blue-300' : 'text-slate-300'}`}>{value}</span>
+      {unit && <span className="text-[10px] text-slate-500">{unit}</span>}
+      {live && <div className="w-1 h-1 rounded-full bg-green-400" />}
+    </div>
+  </div>
+);
 
 const MonitorView: React.FC = () => {
+  const [svg, setSvg] = React.useState('');
+  const [live, setLive] = React.useState<LiveValues>({});
+  const [hasLive, setHasLive] = React.useState(false);
+
+  const loadData = React.useCallback(() => {
+    // Fetch SVG
+    fetch(`${API_BASE_URL}/api/schema/bozsuv`, { headers: { 'ngrok-skip-browser-warning': '1' } })
+      .then(r => r.text()).then(setSvg).catch(() => {});
+
+    // Fetch live values
+    apiFetch('/api/debug/values')
+      .then(r => r.json())
+      .then((data: LiveValues) => {
+        setLive(data);
+        setHasLive(Object.keys(data).length > 0);
+      })
+      .catch(() => {});
+  }, []);
+
+  React.useEffect(() => {
+    loadData();
+    const id = setInterval(loadData, 5000);
+    return () => clearInterval(id);
+  }, [loadData]);
+
+  const getValue = (signal: string, gen: () => string) => {
+    if (hasLive && live[signal] !== undefined) return { value: live[signal], isLive: true };
+    return { value: gen(), isLive: false };
+  };
+
   return (
-    <div className="grid grid-cols-3 gap-6 animate-in fade-in duration-700">
-      {/* Column 1: Station Primary Metrics */}
-      <div className="flex flex-col gap-4">
-        <MetricCard label="Выработка" value="1078.65" unit="кВт" percentage="3.9%" />
-        <MetricCard label="Активная мощность" value="1078.65" unit="кВт•ч" />
-        <MetricCard label="Реактивная мощность" value="1078.65" unit="кВАр•ч" />
-        <MetricCard label="Уровень верхнего бъефа" value="1078.65" unit="м" />
-        <MetricCard label="Уровень нижнего бъефа" value="1078.65" unit="м" />
-        
-        <div className="glass p-4 rounded-xl flex flex-col gap-4">
-          <div className="flex items-center gap-2 px-2">
-            <div className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] text-[#586872]">!</div>
-            <span className="text-[#586872] text-sm">Состояние работы генератора</span>
-          </div>
-          <div className="flex gap-3">
-             <StatusSwitch label="G-1" initialActive={true} />
-             <StatusSwitch label="G-2" initialActive={true} />
-          </div>
+    <div className="h-full flex gap-4 min-h-0">
+      {/* SVG Panel */}
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+        <div className="flex items-center gap-2 mb-2 flex-shrink-0">
+          <div className={`w-1.5 h-1.5 rounded-full ${hasLive ? 'bg-green-400 animate-pulse' : 'bg-slate-500'}`} />
+          <span className="text-[11px] text-slate-400">{hasLive ? 'Данные в реальном времени' : 'Демо-режим (нет связи с ПЛК)'}</span>
         </div>
+        <div
+          className="flex-1 min-h-0"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          dangerouslySetInnerHTML={{ __html: svg || '<div style="color:#475569;font-size:13px">Загрузка схемы...</div>' }}
+        />
       </div>
 
-      {/* Column 2: Secondary Metrics */}
-      <div className="flex flex-col gap-4">
-        <MetricCard label="Активная мощность" value="1078.65" unit="кВт•ч" />
-        <MetricCard label="Реактивная мощность" value="1078.65" unit="кВАр•ч" />
-        <div className="h-full flex flex-col gap-4 justify-between">
-           <MetricCard label="Активная мощность" value="1078.65" unit="кВт•ч" />
-           <MetricCard label="Реактивная мощность" value="1078.65" unit="кВАр•ч" />
-        </div>
-      </div>
-
-      {/* Column 3: PS Sections */}
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-3">
-          <div className="flex justify-between items-center mb-1">
-            <h3 className="text-[#333f4e] text-2xl font-light">ПС "Ботаническая-1"</h3>
-            <span className="text-[#586872] text-xl font-light">35кВ</span>
-          </div>
-          <MetricCard label="Коэффициент мощности" value="1078.65" unit="cos φ" />
-          <MetricCard label="Расход воды" value="1078.65" unit="м³/ч" />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <div className="flex justify-between items-center mb-1">
-            <h3 className="text-[#333f4e] text-2xl font-light">ПС "Ботаническая-2"</h3>
-            <span className="text-[#586872] text-xl font-light">35кВ</span>
-          </div>
-          <MetricCard label="Коэффициент мощности" value="1078.65" unit="cos φ" />
-          <MetricCard label="Расход воды" value="1078.65" unit="м³/ч" />
+      {/* Metrics Panel */}
+      <div className="w-72 flex-shrink-0 flex flex-col gap-2 overflow-y-auto">
+        <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold flex-shrink-0">
+          Параметры
+        </p>
+        <div className="bg-[#0f172b]/60 rounded-xl border border-white/5 px-3 py-1 flex-shrink-0">
+          {METRICS.map(m => {
+            const { value, isLive } = getValue(m.signal, m.gen);
+            return <MetricRow key={m.signal} label={m.label} value={value} unit={m.unit} live={isLive} />;
+          })}
         </div>
       </div>
     </div>

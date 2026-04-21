@@ -151,37 +151,21 @@ def _generate_svg(use_live: bool) -> str:
     with open(SVG_PATH, "r", encoding="utf-8") as f:
         content = f.read()
 
-    soup = BeautifulSoup(content, "lxml-xml")
-    number_pattern = re.compile(r'^\d+(\.\d+)?\.?$')
-
-    for el in soup.find_all(['tspan', 'text']):
-        if not el.string:
-            continue
-        text = el.string.strip()
-        if not number_pattern.match(text):
-            continue
-
-        clean = text.rstrip('.')
+    def replacer(m: re.Match) -> str:
+        full = m.group(0)
+        inner = m.group(1).strip()
+        clean = inner.rstrip('.')
         try:
             num = int(float(clean))
         except ValueError:
-            continue
-
+            return full
         if use_live and num in _live:
-            el.string.replace_with(_live[num])
-        else:
-            # Random fallback
-            if num < 2:
-                new_val = f"{random.uniform(0.1, 0.99):.2f}"
-            else:
-                new_val = str(random.randint(100, 999))
-                if text.endswith('.'):
-                    new_val += '.'
-            el.string.replace_with(new_val)
+            return f">{_live[num]}<"
+        return full  # keep original placeholder — no random noise
 
-    result = str(soup)
-    result = re.sub(r'<\?xml[^>]+\?>', '', result).strip()
-    return result
+    content = re.sub(r'>(\s*\d+\.?\s*)<', replacer, content)
+    content = re.sub(r'<\?xml[^>]+\?>', '', content).strip()
+    return content
 
 
 # ── Routes ───────────────────────────────────────────────────────────────────

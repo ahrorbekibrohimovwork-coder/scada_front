@@ -1284,7 +1284,7 @@ export function WorkPermitDetail() {
               <label className="text-xs text-gray-600 mb-1 block">Части, находящиеся под напряжением</label>
               <textarea value={livePartsText} onChange={e => setLivePartsText(e.target.value)} rows={2}
                 placeholder="Укажите части под напряжением (или «Нет»)"
-                className="w-full px-3 py-2 border border-amber-200 bg-amber-50 rounded text-sm resize-none focus:outline-none focus:ring-1 focus:ring-amber-400" />
+                className="w-full px-3 py-2 border border-amber-200 bg-amber-50 rounded text-sm text-gray-900 resize-none focus:outline-none focus:ring-1 focus:ring-amber-400" />
             </div>
           }
           onSign={sig => handleEDSSign(modal, sig)} onCancel={() => setModal(null)} />

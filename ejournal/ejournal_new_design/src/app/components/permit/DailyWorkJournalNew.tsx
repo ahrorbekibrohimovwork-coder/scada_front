@@ -103,7 +103,7 @@ export function DailyWorkJournalNew({
                 type="text"
                 value={newLocation}
                 onChange={(e) => setNewLocation(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Например: РУ-10кВ, ячейка №5"
                 autoFocus
               />
@@ -114,7 +114,7 @@ export function DailyWorkJournalNew({
                 type="datetime-local"
                 value={newDateTime}
                 onChange={(e) => setNewDateTime(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-2.5 py-1.5 border border-gray-300 rounded text-sm text-gray-900 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

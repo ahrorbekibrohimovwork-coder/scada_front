@@ -55,7 +55,7 @@ export function WorkPermitForm() {
     managerId: '',
     observerId: '',
     foremanId: '',
-    issuerId: '',
+    issuerId: currentUser?.id || '',
   });
 
   const [officials, setOfficials] = useState<Record<string, any[]>>({
@@ -155,6 +155,21 @@ export function WorkPermitForm() {
           }
         }
       } catch (_) {}
+
+      // Ensure current user is always available as issuer
+      if (currentUser) {
+        const alreadyIn = grouped['issuer'].some(
+          x => String(x.id) === String(currentUser.id)
+        );
+        if (!alreadyIn) {
+          grouped['issuer'].unshift({
+            id: currentUser.id,
+            full_name: currentUser.name,
+            position: currentUser.position || '',
+            ex_group: currentUser.electricalGroup || '',
+          });
+        }
+      }
 
       setOfficials(grouped);
     } catch (e) {
@@ -544,14 +559,14 @@ export function WorkPermitForm() {
                       <div>
                         <label className="text-xs text-slate-500 mb-1 block">Группа ЭБ *</label>
                         <select value={m.group} onChange={e => updateMember(m.id, 'group', e.target.value)}
-                          className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                           {GROUPS.map(g => <option key={g}>{g}</option>)}
                         </select>
                       </div>
                       <div>
                         <label className="text-xs text-slate-500 mb-1 block">Направление *</label>
                         <input value={m.direction} onChange={e => updateMember(m.id, 'direction', e.target.value)}
-                          placeholder="Напр. работ" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                          placeholder="Напр. работ" className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
                       </div>
                     </div>
                   </div>

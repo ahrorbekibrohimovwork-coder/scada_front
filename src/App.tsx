@@ -60,11 +60,13 @@ export const App = (): JSX.Element => {
     if (activePage === 'asodu') {
       if (stationDetail) {
         return (
-          <StationDetail
-            station={GES1_STATION}
-            mode={detailMode}
-            onModeChange={setDetailMode}
-          />
+          <div className="h-full">
+            <StationDetail
+              station={GES1_STATION}
+              mode={detailMode}
+              onModeChange={setDetailMode}
+            />
+          </div>
         );
       }
       return (

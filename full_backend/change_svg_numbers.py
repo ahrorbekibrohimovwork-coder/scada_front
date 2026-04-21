@@ -159,9 +159,16 @@ def _generate_svg(use_live: bool) -> str:
             num = int(float(clean))
         except ValueError:
             return full
+        # Real data for mapped signals
         if use_live and num in _live:
             return f">{_live[num]}<"
-        return full  # keep original placeholder — no random noise
+        # Random fallback for unmapped positions
+        if num < 2:
+            return f">{random.uniform(0.1, 0.99):.2f}<"
+        val = str(random.randint(100, 999))
+        if inner.endswith('.'):
+            val += '.'
+        return f">{val}<"
 
     content = re.sub(r'>(\s*\d+\.?\s*)<', replacer, content)
     content = re.sub(r'<\?xml[^>]+\?>', '', content).strip()

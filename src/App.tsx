@@ -21,7 +21,7 @@ function KaskadSvg() {
   }, []);
   return (
     <div
-      className="flex-1 flex items-center justify-center overflow-hidden w-full h-full"
+      style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
@@ -68,11 +68,9 @@ export const App = (): JSX.Element => {
         );
       }
       return (
-        <div className="flex-1 relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <KaskadSvg />
-          </div>
-          {/* Invisible clickable overlay on top of SVG */}
+        <div className="flex-1 relative" style={{ minHeight: 0 }}>
+          <KaskadSvg />
+          {/* Invisible clickable overlay */}
           <button
             onClick={() => setStationDetail(true)}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"

@@ -203,9 +203,12 @@ def _generate_kaskad_svg() -> str:
 
     # Strip XML declaration so SVG can be embedded inline
     content = re.sub(r'<\?xml[^>]+\?>', '', content).strip()
-    # Force SVG to fill its container
-    content = re.sub(r'(<svg\b[^>]*)\bwidth="[^"]*"', r'\1width="100%"', content)
-    content = re.sub(r'(<svg\b[^>]*)\bheight="[^"]*"', r'\1height="100%"', content)
+    # Force SVG to fill its container: replace or inject width/height/style
+    content = re.sub(r'(<svg\b[^>]*?)\bwidth="[^"]*"', r'\1width="100%"', content, flags=re.DOTALL)
+    content = re.sub(r'(<svg\b[^>]*?)\bheight="[^"]*"', r'\1height="100%"', content, flags=re.DOTALL)
+    # If no width/height found, inject style
+    if 'width="100%"' not in content:
+        content = re.sub(r'<svg\b', '<svg width="100%" height="100%"', content, count=1)
     return content
 
 

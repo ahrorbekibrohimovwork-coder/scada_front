@@ -1,88 +1,39 @@
 import React from 'react';
 import Sidebar, { Page } from './components/Sidebar';
 import Header from './components/Header';
-import StationColumn from './components/StationColumn';
-import StationDetail from './components/StationDetail';
 import ChatAssistant from './components/ChatAssistant';
+import { API_BASE_URL } from './config';
 
-// Вспомогательный компонент для карточек статистики
-const MiniStatCard = ({ title, value, icon, color }: { title: string, value: string, icon: React.ReactNode, color: string }) => (
-  <div className="bg-[#141e31] rounded-2xl border border-white/10 p-4 flex flex-col justify-between h-full">
-    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-      {icon} {title}
-    </div>
-    <div className={`text-5xl 2xl:text-6xl font-semibold text-center py-1 ${color}`}>
-      {value}
-    </div>
-  </div>
-);
+function KaskadSvg() {
+  const [svg, setSvg] = React.useState('');
+  React.useEffect(() => {
+    const load = () =>
+      fetch(`${API_BASE_URL}/api/schema/kaskad`, {
+        headers: { 'ngrok-skip-browser-warning': '1' },
+      })
+        .then(r => r.text())
+        .then(setSvg)
+        .catch(() => {});
+    load();
+    const id = setInterval(load, 5000);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div
+      className="flex-1 flex items-center justify-center overflow-hidden w-full h-full"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+}
 
-const STATIONS_DATA = [
-  {
-    name: "ГЭС-1",
-    subName: "Бозсу",
-    metrics: [
-      { label: "Выработка", value: "1078.65", unit: "кВт", percentage: "3.9%" },
-      { label: "Активная мощность", value: "1078.65", unit: "кВт•ч" },
-      { label: "Реактивная мощность", value: "1078.65", unit: "кВАр•ч" },
-      { label: "Уровень верхнего бъефа", value: "1078.65", unit: "м" },
-      { label: "Уровень нижнего бъефа", value: "1078.65", unit: "м" },
-    ]
-  },
-  {
-    name: "ГЭС-21",
-    subName: "Шайхонтохур",
-    metrics: [
-      { label: "Выработка", value: "0.00", unit: "кВт", percentage: "0%" },
-      { label: "Активная мощность", value: "0.00", unit: "кВт•ч" },
-      { label: "Реактивная мощность", value: "0.00", unit: "кВАр•ч" },
-      { label: "Уровень верхнего бъефа", value: "0.00", unit: "м" },
-      { label: "Уровень нижнего бъефа", value: "0.00", unit: "м" },
-    ]
-  },
-  {
-    name: "ГЭС-4",
-    subName: "Бурджар",
-    metrics: [
-      { label: "Выработка", value: "0.00", unit: "кВт", percentage: "0%" },
-      { label: "Активная мощность", value: "0.00", unit: "кВт•ч" },
-      { label: "Реактивная мощность", value: "0.00", unit: "кВAр•ч" },
-      { label: "Уровень верхнего бъефа", value: "0.00", unit: "м" },
-      { label: "Уровень нижнего бъефа", value: "0.00", unit: "м" },
-    ]
-  },
-  {
-    name: "ГЭС-9",
-    subName: "Актепа",
-    metrics: [
-      { label: "Выработка", value: "0.00", unit: "кВт", percentage: "0%" },
-      { label: "Активная мощность", value: "0.00", unit: "кВт•ч" },
-      { label: "Реактивная мощность", value: "0.00", unit: "кВAр•ч" },
-      { label: "Уровень верхнего бъефа", value: "0.00", unit: "м" },
-      { label: "Уровень нижнего бъефа", value: "0.00", unit: "м" },
-    ]
-  }
-];
 
 export const App = (): JSX.Element => {
   const [activePage, setActivePage] = React.useState<Page>('asodu');
-  const [detailView, setDetailView] = React.useState<'list' | 'detail'>('list');
-  const [selectedStation, setSelectedStation] = React.useState(STATIONS_DATA[0]);
-  const [detailMode, setDetailMode] = React.useState<'monitor' | 'schema'>('monitor');
-
   const handleNavigate = (page: Page) => {
     setActivePage(page);
-    if (page === 'asodu') setDetailView('list');
   };
 
-  const handleStationClick = (station: typeof STATIONS_DATA[0]) => {
-    setSelectedStation(station);
-    setDetailView('detail');
-  };
-
-  const handleBack = () => {
-    setDetailView('list');
-  };
+  const handleBack = () => {};
 
   const renderContent = () => {
     if (activePage === 'dashboard') {
@@ -100,26 +51,9 @@ export const App = (): JSX.Element => {
     }
 
     if (activePage === 'asodu') {
-      if (detailView === 'detail') {
-        return (
-          <StationDetail
-            station={selectedStation}
-            mode={detailMode}
-            onModeChange={setDetailMode}
-          />
-        );
-      }
       return (
-        <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-8 overflow-y-auto pr-2">
-          {STATIONS_DATA.map((station, index) => (
-            <div key={index} onClick={() => handleStationClick(station)} className="cursor-pointer">
-              <StationColumn
-                name={station.name}
-                subName={station.subName}
-                metrics={station.metrics}
-              />
-            </div>
-          ))}
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          <KaskadSvg />
         </div>
       );
     }
@@ -259,7 +193,7 @@ export const App = (): JSX.Element => {
       <div className="flex-1 ml-[269px] flex flex-col h-full overflow-hidden">
         <Header
           activePage={activePage}
-          breadcrumbStation={activePage === 'asodu' && detailView === 'detail' ? selectedStation.name : undefined}
+          breadcrumbStation={undefined}
           onBack={handleBack}
         />
 

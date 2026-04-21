@@ -10,7 +10,7 @@ from db_operations import get_db, SessionLocal
 from models import *  # Import all models to register them
 from app.api import permits, auth, lookups, tts, chat
 from app.api.auth import USERS
-from change_svg_numbers import router as svg_router
+from change_svg_numbers import router as svg_router, post_debug, get_debug, clear_debug
 
 # Create all tables
 Base.metadata.create_all(bind=engine)
@@ -96,6 +96,12 @@ app.include_router(chat.router, prefix="/api", tags=["Chat"])
 @app.get("/")
 def root():
     return {"message": "Electron Journal Backend Running"}
+
+# Debug endpoints also reachable without /api prefix (for PLC/SCADA systems)
+from fastapi import Request as _Request
+app.add_api_route("/debug",     post_debug,  methods=["POST"], tags=["Schema"])
+app.add_api_route("/debug",     get_debug,   methods=["GET"],  tags=["Schema"])
+app.add_api_route("/debug",     clear_debug, methods=["DELETE"], tags=["Schema"])
 
 
 @app.get("/api/debug/db_overview")

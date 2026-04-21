@@ -161,9 +161,56 @@ def _generate_svg(use_live: bool) -> str:
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
+def _kaskad_values() -> Dict[int, str]:
+    """Build placeholder→value map for kaskad.svg."""
+    plc1_active   = float(_live.get(62,  0))   # bozsu.plc1.ai.active_power
+    plc2_active   = float(_live.get(162, 0))   # bozsu.plc2.ai.active_power
+    plc1_reactive = float(_live.get(63,  0))   # bozsu.plc1.ai.reactive_power
+    return {
+        111: _fmt(plc1_active + plc2_active),
+        112: _fmt(plc1_active),
+        113: _fmt(plc1_reactive),
+        114: "470",
+        115: "470",
+    }
+
+
+def _generate_kaskad_svg() -> str:
+    kaskad_path = os.path.join(BASE_DIR, '..', 'svg_files', 'kaskad.svg')
+    with open(kaskad_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    values = _kaskad_values()
+    soup = BeautifulSoup(content, "lxml-xml")
+    number_pattern = re.compile(r'^\d+(\.\d+)?\.?$')
+
+    for el in soup.find_all(['tspan', 'text']):
+        if not el.string:
+            continue
+        text = el.string.strip()
+        if not number_pattern.match(text):
+            continue
+        try:
+            num = int(float(text.rstrip('.')))
+        except ValueError:
+            continue
+        if num in values:
+            el.string.replace_with(values[num])
+
+    result = str(soup)
+    result = re.sub(r'<\?xml[^>]+\?>', '', result).strip()
+    return result
+
+
 @router.get("/schema/svg")
 def get_schema_svg():
     svg_content = _generate_svg(use_live=bool(_live))
+    return Response(content=svg_content, media_type="image/svg+xml")
+
+
+@router.get("/schema/kaskad")
+def get_kaskad_svg():
+    svg_content = _generate_kaskad_svg()
     return Response(content=svg_content, media_type="image/svg+xml")
 
 
@@ -174,6 +221,7 @@ async def post_debug(request: Request):
     Body: flat JSON  {"bozsu.plc1.ai.active_power": 145.6, ...}
     """
     payload: Dict[str, Any] = await request.json()
+    print(payload)
     updated = []
     for signal, value in payload.items():
         svg_num = SIGNAL_TO_SVG.get(signal)

@@ -1,6 +1,7 @@
 import React from 'react';
 import Sidebar, { Page } from './components/Sidebar';
 import Header from './components/Header';
+import StationDetail from './components/StationDetail';
 import ChatAssistant from './components/ChatAssistant';
 import { API_BASE_URL } from './config';
 
@@ -27,13 +28,19 @@ function KaskadSvg() {
 }
 
 
+const GES1_STATION = { name: 'ГЭС-1', subName: 'Бозсу' };
+
 export const App = (): JSX.Element => {
   const [activePage, setActivePage] = React.useState<Page>('asodu');
+  const [stationDetail, setStationDetail] = React.useState(false);
+  const [detailMode, setDetailMode] = React.useState<'monitor' | 'schema'>('monitor');
+
   const handleNavigate = (page: Page) => {
     setActivePage(page);
+    setStationDetail(false);
   };
 
-  const handleBack = () => {};
+  const handleBack = () => setStationDetail(false);
 
   const renderContent = () => {
     if (activePage === 'dashboard') {
@@ -51,9 +58,29 @@ export const App = (): JSX.Element => {
     }
 
     if (activePage === 'asodu') {
+      if (stationDetail) {
+        return (
+          <StationDetail
+            station={GES1_STATION}
+            mode={detailMode}
+            onModeChange={setDetailMode}
+          />
+        );
+      }
       return (
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
-          <KaskadSvg />
+        <div className="flex-1 flex flex-col overflow-hidden gap-3">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setStationDetail(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#141e31] border border-white/10 text-sm font-medium text-white hover:bg-[#1e2d47] transition-all"
+            >
+              <span className="w-2 h-2 rounded-full bg-blue-400" />
+              ГЭС-1 "Бозсу"
+            </button>
+          </div>
+          <div className="flex-1 flex items-center justify-center overflow-hidden">
+            <KaskadSvg />
+          </div>
         </div>
       );
     }

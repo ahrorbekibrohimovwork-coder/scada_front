@@ -249,7 +249,7 @@ export function WorkPermitDetail() {
   const isManager  = role === 'manager'               && permit.managerId === uid;
   const isObserver = role === 'observer'              && permit.observerId === uid;
   const isForeman  = role === 'foreman'               && permit.foremanId === uid;
-  const isMember   = role === 'worker'                && permit.brigadeMembers.some(m => m.userId === uid && m.isActive);
+  const isMember   = role === 'worker'                && permit.brigadeMembers.some(m => (m.userId === uid || (!m.userId && m.name === currentUser.name)) && m.isActive);
 
   const S = permit.status;
   const lastBriefing  = permit.dailyBriefings[permit.dailyBriefings.length - 1];
@@ -365,17 +365,17 @@ export function WorkPermitDetail() {
     // Member
     {
       key: 'member_sign', label: 'Подписать допуск ЭЦП', variant: 'primary', icon: Shield,
-      show: isMember && !!firstBriefing && !!firstBriefing?.admitterSignature && !firstBriefing?.brigadeSignatures.find(s => s.memberId === permit.brigadeMembers.find(m => m.userId === uid)?.id),
+      show: isMember && !!firstBriefing && !!firstBriefing?.admitterSignature && !firstBriefing?.brigadeSignatures.find(s => s.memberId === permit.brigadeMembers.find(m => m.userId === uid || (!m.userId && m.name === currentUser.name))?.id),
       directAction: () => {
-        const m = permit.brigadeMembers.find(bm => bm.userId === uid);
+        const m = permit.brigadeMembers.find(bm => bm.userId === uid || (!bm.userId && bm.name === currentUser.name));
         if (m && firstBriefing) { ctx.signBriefingMember(permit.id, firstBriefing.id, m.id, m.name, makeSig()); pushToast(TOAST_MSGS['member_sign'], 'success', 'Действие успешно выполнено'); }
       },
     },
     {
       key: 'member_sign_daily', label: 'Подписать инструктаж ЭЦП', variant: 'primary', icon: Shield,
-      show: isMember && !!lastBriefing && lastBriefing !== firstBriefing && !!lastBriefing?.admitterSignature && !lastBriefing?.brigadeSignatures.find(s => s.memberId === permit.brigadeMembers.find(m => m.userId === uid)?.id),
+      show: isMember && !!lastBriefing && lastBriefing !== firstBriefing && !!lastBriefing?.admitterSignature && !lastBriefing?.brigadeSignatures.find(s => s.memberId === permit.brigadeMembers.find(m => m.userId === uid || (!m.userId && m.name === currentUser.name))?.id),
       directAction: () => {
-        const m = permit.brigadeMembers.find(bm => bm.userId === uid);
+        const m = permit.brigadeMembers.find(bm => bm.userId === uid || (!bm.userId && bm.name === currentUser.name));
         if (m && lastBriefing) { ctx.signBriefingMember(permit.id, lastBriefing.id, m.id, m.name, makeSig()); pushToast(TOAST_MSGS['member_sign_daily'], 'success', 'Действие успешно выполнено'); }
       },
     },

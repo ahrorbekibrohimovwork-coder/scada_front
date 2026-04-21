@@ -261,7 +261,7 @@ export function DailyWorkJournalNew({
                             const memberSigned = briefing.brigadeSignatures.find(s => s.memberId === member.id);
                             const hasFirstSignature = !!member.firstBriefingSignature;
                             const needsToSign = !hasFirstSignature;
-                            const isMe = member.userId === currentUser.id;
+                            const isMe = member.userId === currentUser.id || (!member.userId && member.name === currentUser.name);
                             const canSign = needsToSign && isMe && canSignMember && briefing.admitterSignature;
 
                             return (

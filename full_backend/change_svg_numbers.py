@@ -246,6 +246,60 @@ def get_kaskad_svg():
     return Response(content=svg_content, media_type="image/svg+xml")
 
 
+def _bozsuv_values() -> Dict[int, str]:
+    """Build correct placeholder→value map for bozsuv.svg.
+
+    bozsuv.svg layout:
+      Left column (x=26):
+        51 = Выработка (сумма G1+G2)
+        52 = Активная мощность (G1)
+        53 = Реактивная мощность (G1)
+        54 = Уровень верхнего бьефа  (нет сигнала)
+        55 = Уровень нижнего бьефа   (нет сигнала)
+      ПС Ботаническая-1 (G1 = plc1):
+        11 = Активная мощность   12 = Реактивная мощность
+        13 = Напряжение          14 = Частота
+        15 = Cos φ               16 = Расход воды
+      ПС Ботаническая-2 (G2 = plc2):
+        21 = Активная мощность   22 = Реактивная мощность
+        23 = Напряжение          24 = Частота
+        25 = Cos φ               26 = Расход воды
+    """
+    # Raw live values (stored as plain numeric strings in _live keyed by SIGNAL_TO_SVG numbers)
+    p1_act  = float(_live.get(62,  0))   # plc1 active_power
+    p2_act  = float(_live.get(162, 0))   # plc2 active_power
+    p1_react = float(_live.get(63,  0))  # plc1 reactive_power
+    p2_react = float(_live.get(163, 0))  # plc2 reactive_power
+    p1_uab   = float(_live.get(54,  0))  # plc1 uab
+    p2_uab   = float(_live.get(154, 0))  # plc2 uab
+    p1_freq  = float(_live.get(53,  0))  # plc1 frequency
+    p2_freq  = float(_live.get(153, 0))  # plc2 frequency
+    p1_cos   = float(_live.get(57,  0))  # plc1 cosphi
+    p2_cos   = float(_live.get(157, 0))  # plc2 cosphi
+
+    values: Dict[int, str] = {
+        # Left totals
+        51: _fmt(p1_act + p2_act),       # Выработка
+        52: _fmt(p1_act),                # Активная мощность G1
+        53: _fmt(p1_react),              # Реактивная мощность G1
+        # G1 (Ботаническая-1)
+        11: _fmt(p1_act),
+        12: _fmt(p1_react),
+        13: _fmt(p1_uab),
+        14: _fmt(p1_freq),
+        15: _fmt(p1_cos),
+        16: _fmt(p1_act / 100) if p1_act else _fmt(0),   # Расход воды G1
+        # G2 (Ботаническая-2)
+        21: _fmt(p2_act),
+        22: _fmt(p2_react),
+        23: _fmt(p2_uab),
+        24: _fmt(p2_freq),
+        25: _fmt(p2_cos),
+        26: _fmt(p2_act / 100) if p2_act else _fmt(0),   # Расход воды G2
+    }
+    return values
+
+
 @router.get("/schema/bozsuv")
 def get_bozsuv_svg():
     bozsuv_path = os.path.join(BASE_DIR, '..', 'svg_files', 'bozsuv.svg')
@@ -253,6 +307,7 @@ def get_bozsuv_svg():
         content = f.read()
 
     use_live = bool(_live)
+    live_values = _bozsuv_values() if use_live else {}
 
     def replacer(m: re.Match) -> str:
         full = m.group(0)
@@ -262,8 +317,9 @@ def get_bozsuv_svg():
             num = int(float(clean))
         except ValueError:
             return full
-        if use_live and num in _live:
-            return f">{_fmt(_live[num])}<"
+        if use_live and num in live_values:
+            return f">{live_values[num]}<"
+        # Fallback: random for unmapped placeholders (54, 55 = water levels)
         if num < 2:
             return f">{random.uniform(0.1, 0.99):.2f}<"
         val = str(random.randint(100, 999))

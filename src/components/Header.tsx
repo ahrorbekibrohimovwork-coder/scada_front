@@ -14,7 +14,11 @@ const Header: React.FC<HeaderProps> = ({ activePage, breadcrumbStation, onBack }
   return (
     <header className="h-[90px] w-full flex items-center justify-between px-8 bg-[#141e31]/40 backdrop-blur-sm fixed top-0 left-[269px] z-20 border-b border-white/5 pr-[269px]">
       <div className="flex items-center gap-4">
-        {isDashboard ? (
+        {activePage === 'video' ? (
+          <span className="text-white font-bold text-base tracking-widest uppercase">
+            Система видеоаналитики
+          </span>
+        ) : isDashboard ? (
           <span className="text-white font-bold text-base tracking-widest uppercase">
             Стратегическая панель мониторинга
           </span>

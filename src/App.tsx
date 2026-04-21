@@ -258,6 +258,7 @@ export const App = (): JSX.Element => {
 
       <div className="flex-1 ml-[269px] flex flex-col h-full overflow-hidden">
         <Header
+          activePage={activePage}
           breadcrumbStation={activePage === 'asodu' && detailView === 'detail' ? selectedStation.name : undefined}
           onBack={handleBack}
         />

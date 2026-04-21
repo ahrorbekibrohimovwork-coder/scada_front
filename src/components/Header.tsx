@@ -22,6 +22,13 @@ const Header: React.FC<HeaderProps> = ({ activePage, breadcrumbStation, onBack }
           <span className="text-white font-bold text-base tracking-widest uppercase">
             Стратегическая панель мониторинга
           </span>
+        ) : activePage === 'asodu' ? (
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-3 bg-blue-500/20 rounded-sm" />
+            <span className="text-[#586872] text-lg font-medium">
+              Филиал "Каскад Ташкентских ГЭС"
+            </span>
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <div className="w-4 h-3 bg-blue-500/20 rounded-sm" />

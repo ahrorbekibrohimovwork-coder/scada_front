@@ -68,19 +68,16 @@ export const App = (): JSX.Element => {
         );
       }
       return (
-        <div className="flex-1 flex flex-col overflow-hidden gap-3">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setStationDetail(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#141e31] border border-white/10 text-sm font-medium text-white hover:bg-[#1e2d47] transition-all"
-            >
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
-              ГЭС-1 "Бозсу"
-            </button>
-          </div>
-          <div className="flex-1 flex items-center justify-center overflow-hidden">
+        <div className="flex-1 relative overflow-hidden">
+          <div className="absolute inset-0 flex items-center justify-center">
             <KaskadSvg />
           </div>
+          {/* Invisible clickable overlay on top of SVG */}
+          <button
+            onClick={() => setStationDetail(true)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+            aria-label="ГЭС-1 Бозсу — открыть детали"
+          />
         </div>
       );
     }

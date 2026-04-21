@@ -274,7 +274,7 @@ def format_member_name(member: BrigadeMember) -> str:
     return " ".join(part for part in [member.name, member.surname, member.father_name] if part)
 
 def map_status(db_status: Optional[str]) -> str:
-    mapping = {"DRAFT": "draft", "OFFICIALS_ASSIGNED": "draft", "BRIGADE_READY": "draft", "PENDING_DISPATCHER": "pending_dispatcher", "RETURNED_TO_ISSUER": "returned_to_issuer", "PENDING_ASSISTANT": "pending_assistant", "PREPARING_WORKPLACES": "preparing_workplaces", "PENDING_ADMITTER": "pending_admitter", "RETURNED_TO_ASSISTANT": "returned_to_assistant", "ADMITTER_CHECKED": "admitter_checked", "RETURNED_TO_ADMITTER": "returned_to_admitter", "WORKPLACE_APPROVED": "workplace_approved", "ADMITTED": "admitted", "IN_PROGRESS": "in_progress", "DAILY_ENDED": "daily_ended", "CLOSING": "closing", "CLOSED": "closed", "CANCELLED": "cancelled"}
+    mapping = {"DRAFT": "draft", "OFFICIALS_ASSIGNED": "draft", "BRIGADE_READY": "draft", "PENDING_DISPATCHER": "pending_dispatcher", "REWORK": "rework", "RETURNED_TO_ISSUER": "returned_to_issuer", "PENDING_ASSISTANT": "pending_assistant", "PREPARING_WORKPLACES": "preparing_workplaces", "PENDING_ADMITTER": "pending_admitter", "RETURNED_TO_ASSISTANT": "returned_to_assistant", "ADMITTER_CHECKED": "admitter_checked", "RETURNED_TO_ADMITTER": "returned_to_admitter", "WORKPLACE_APPROVED": "workplace_approved", "ADMITTED": "admitted", "IN_PROGRESS": "in_progress", "DAILY_ENDED": "daily_ended", "CLOSING": "closing", "CLOSED": "closed", "CANCELLED": "cancelled"}
     return mapping.get(db_status or "", "draft")
 
 def serialize_permit(permit: WorkPermit, *, name_to_id_by_role: dict[str, dict[str, str]], id_to_name: dict[str, str], id_to_info: dict = None) -> dict:

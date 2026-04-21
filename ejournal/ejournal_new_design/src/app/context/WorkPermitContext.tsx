@@ -35,6 +35,9 @@ interface WorkPermitContextValue {
   extendPermit: (id: string, newEndDateTime: string, issuerSig: EDSSignature) => Promise<void>;
   initiateClosure: (id: string, notifyPerson: string, closureDateTime: string, sig: EDSSignature) => Promise<void>;
   signClosureManager: (id: string, sig: EDSSignature) => Promise<void>;
+  returnToIssuer: (id: string, comment: string, sig: EDSSignature) => Promise<void>;
+  returnToAssistant: (id: string, comment: string) => Promise<void>;
+  returnToAdmitter: (id: string, comment: string, userId: string, userName: string) => Promise<void>;
   cancelPermit: (id: string, userId: string, userName: string, reason: string) => Promise<void>;
   saveRework: (id: string, safetyMeasures: string[], specialInstructions: string) => Promise<void>;
   saveAssistantChecklist: (id: string, checklist: AssistantCheckItem[]) => Promise<void>;
@@ -138,7 +141,16 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
   const signClosureManager = useCallback((id: string, sig: EDSSignature) => 
     apiAction(id, 'manager_close', { signature: sig }), [apiAction]);
 
-  const cancelPermit = useCallback((id: string, userId: string, userName: string, reason: string) => 
+  const returnToIssuer = useCallback((id: string, comment: string, sig: EDSSignature) =>
+    apiAction(id, 'dispatcher_return', { comment, signature: sig }), [apiAction]);
+
+  const returnToAssistant = useCallback((id: string, comment: string) =>
+    apiAction(id, 'admitter_return', { comment }), [apiAction]);
+
+  const returnToAdmitter = useCallback((id: string, comment: string, userId: string, userName: string) =>
+    apiAction(id, 'verifier_return', { comment, signature: { userId, userName, timestamp: new Date().toISOString() } }), [apiAction]);
+
+  const cancelPermit = useCallback((id: string, userId: string, userName: string, reason: string) =>
     apiAction(id, 'cancel', { comment: reason, signature: { userId, userName, timestamp: new Date().toISOString() } }), [apiAction]);
 
   const saveRework = useCallback(async (id: string, safetyMeasures: string[], specialInstructions: string) => {
@@ -178,12 +190,13 @@ export function WorkPermitProvider({ children }: { children: React.ReactNode }) 
 
   return (
     <Ctx.Provider value={{
-      permits, loading, refresh, getPermit, createPermit, signByIssuer, 
-      signByDispatcher, acknowledgeByAssistant, submitWorkplacesReady, 
+      permits, loading, refresh, getPermit, createPermit, signByIssuer,
+      signByDispatcher, acknowledgeByAssistant, submitWorkplacesReady,
       signByAdmitter, approveWorkplace, createBriefing, signBriefingAdmitter,
-      signBriefingResponsible, signBriefingMember, endDailyWork, 
-      extendPermit, initiateClosure, signClosureManager, cancelPermit, saveRework,
-      saveAssistantChecklist, getPermitsByUser,
+      signBriefingResponsible, signBriefingMember, endDailyWork,
+      extendPermit, initiateClosure, signClosureManager,
+      returnToIssuer, returnToAssistant, returnToAdmitter,
+      cancelPermit, saveRework, saveAssistantChecklist, getPermitsByUser,
     }}>
       {children}
     </Ctx.Provider>

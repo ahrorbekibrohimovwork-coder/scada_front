@@ -142,7 +142,7 @@ _load_live()
 def _fmt(value: Any) -> str:
     try:
         f = float(value)
-        return f"{f:.2f}" if f != int(f) else str(int(f))
+        return f"{f:,.2f}".replace(",", "\u00a0")
     except Exception:
         return str(value)
 
